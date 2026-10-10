@@ -16,7 +16,7 @@ Fees, input selection, dust	317	R0	Active	zcash_primitives::transaction::fees::z
 Fees, input selection, dust	317	R1	Draft	zcash_client_backend::fees	adds Ironwood-pool actions to logical_actions (NU6.3)
 Fees, input selection, dust	317	R2	Draft	zcash_client_backend::fees	adds fee handling for memo bundles (ZIP 231)
 Fees, input selection, dust	2009		Draft	zcash_primitives::transaction::fees::zip317	wallets SHOULD adopt marginal_fee 1000 at mainnet 3590000; the crate still carries 5000
-Fees, input selection, dust	315		Draft	zcash_client_backend::data_api::wallet::input_selection	wallet best practices, Draft
+Fees, input selection, dust	315		Draft	zcash_client_backend::data_api::wallet::input_selection (SpendPolicy, GreedyInputSelector)	"Information leakage for transfers between pools": wallets MUST NOT automatically combine funds across pools to satisfy a transfer. librustzcash main (3c76c2d822, 2026-10-09) leaves it to the caller: the default SpendPolicy permits every pool and the selector may combine them; restrict SpendPolicy to one pool, or use DustAction::AddDustToFee, to stay in one pool
 Pool migration	318		Draft	zcash_pool_migration; zcash_protocol::zip318	Orchard to Ironwood migration, not a payments ZIP
 Addresses, keys, viewing keys	316	R0	Active	zcash_address; zcash_keys::keys	what zcash_address 0.13.0 encodes (uview)
 Addresses, keys, viewing keys	316	R2	Draft	zcash_address 0.14.0-pre.1; zcash_keys::keys	zu, tu, uvf, uvi; zcash_keys encodes Revision 0 when representable and Revision 2 otherwise

@@ -31,7 +31,7 @@ Rendered from by-area.tsv by scripts/index.py. Do not edit.
 | 317 | Proportional Transfer Fee Mechanism | R1 | Draft | zcash_client_backend::fees | adds Ironwood-pool actions to logical_actions (NU6.3) |
 | 317 | Proportional Transfer Fee Mechanism | R2 | Draft | zcash_client_backend::fees | adds fee handling for memo bundles (ZIP 231) |
 | 2009 | Reduce Marginal Fee to 1000 Zatoshis and Raise the Weight Ratio Cap to 10 |  | Draft | zcash_primitives::transaction::fees::zip317 | wallets SHOULD adopt marginal_fee 1000 at mainnet 3590000; the crate still carries 5000 |
-| 315 | Best Practices for Wallet Implementations |  | Draft | zcash_client_backend::data_api::wallet::input_selection | wallet best practices, Draft |
+| 315 | Best Practices for Wallet Implementations |  | Draft | zcash_client_backend::data_api::wallet::input_selection (SpendPolicy, GreedyInputSelector) | "Information leakage for transfers between pools": wallets MUST NOT automatically combine funds across pools to satisfy a transfer. librustzcash main (3c76c2d822, 2026-10-09) leaves it to the caller: the default SpendPolicy permits every pool and the selector may combine them; restrict SpendPolicy to one pool, or use DustAction::AddDustToFee, to stay in one pool |
 
 ## Pool migration
 
