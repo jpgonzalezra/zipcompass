@@ -1,0 +1,9 @@
+{
+  "name": "zipcompass",
+  "description": "Maps Zcash code under review to the ZIP, section and revision that governs it, from an index kept current with zcash/zips.",
+  "version": "0.1.0",
+  "author": {
+    "name": "jpgonzalezra"
+  },
+  "license": "MIT"
+}

@@ -1,0 +1,14 @@
+{
+  "name": "zipcompass",
+  "description": "The zipcompass plugin: a review skill for Zcash code that rests on a ZIP.",
+  "owner": {
+    "name": "jpgonzalezra"
+  },
+  "plugins": [
+    {
+      "name": "zipcompass",
+      "source": "./",
+      "description": "Maps Zcash code under review to the ZIP, section and revision that governs it, from an index kept current with zcash/zips."
+    }
+  ]
+}
