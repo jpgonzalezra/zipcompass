@@ -15,3 +15,10 @@ into a project's `.claude/skills/`. The skill expects a checkout of
 `zcash/zips` next to this repository, or wherever `ZIPS_DIR` points. `make index`
 regenerates the index from that checkout and `make check` verifies the hand-written tables
 and the skill text against the index and the checkout.
+
+`make update` fetches `zcash/zips`, fast-forwards the checkout, regenerates the index on the
+`update` branch and writes a report under `reports/`. `make publish` pushes that branch and
+opens or refreshes its pull request. It needs an SSH agent and an authenticated `gh`, so run
+it from a session. A scheduler runs `scripts/update.sh` directly: it needs no credential, its
+last line of output summarizes the run, and it exits 0 when it completed, 75 when it skipped
+and 1 when it failed.
