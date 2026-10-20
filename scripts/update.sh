@@ -119,7 +119,7 @@ source_old=$(head -n 1 "$old_index" | grep -oE '\b[0-9a-f]{40}\b') ||
   fail "no zips commit in the index header on $baseline"
 
 if [ "$fetch" = 1 ]; then
-  git -c url.https://github.com/.insteadOf=git@github.com: -C "$zips_dir" fetch -q origin ||
+  git -c url.https://github.com/.insteadOf=git@github.com: -C "$zips_dir" fetch -q --tags origin ||
     skip "the zips fetch failed"
   git -C "$zips_dir" merge -q --ff-only origin/main ||
     fail "the zips checkout cannot fast-forward to origin/main"
@@ -251,6 +251,7 @@ write_report() {
     echo "# ZIP index update to zips@${source_new:0:8}"
     echo
     echo "\`zcash/zips\` moved from \`${source_old:0:8}\` ($(commit_date "$source_old")) to \`${source_new:0:8}\` ($(commit_date "$source_new")): $count $noun touched \`zips/\`. The baseline is $baseline_note. Built by \`scripts/update.sh\` on $today."
+    "$project/scripts/protocol-changes.sh" "$zips_dir" "$range"
     echo
     file_section Added A no
     file_section Modified M no
