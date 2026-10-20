@@ -3,9 +3,12 @@
 hand-written TSV tables next to it.
 
 Usage: index.py [--check] <zips-dir>
+       index.py --anchors <zips-dir>
 
 With --check nothing is written: the files are built in memory and compared
-with the ones on disk, and a difference is a failure.
+with the ones on disk, and a difference is a failure. With --anchors nothing
+is written either: the anchors of protocol/protocol.tex, the labels of its
+headings and their extralabel aliases, are printed one per line, sorted.
 """
 
 import csv
@@ -23,6 +26,12 @@ DRAFT = re.compile(r"^draft-.+\.(rst|md)$")
 FIELD = re.compile(r"^([A-Za-z-]+):\s*(.*)$")
 REQUIRED = ("ZIP", "Title", "Status", "Category")
 INDEX_COLUMNS = ("ZIP", "Title", "Status", "Category", "Created", "Last change", "File", "Relations")
+HEADING_LEVELS = ("part", "section", "subsection", "subsubsection", "subsubsubsection", "subsubsubsubsection")
+HEADING = re.compile(r"\\l(" + "|".join(HEADING_LEVELS) + r")\{")
+HEADING_LIKE = re.compile(r"\\l[a-z]*(?:section|part|paragraph)\{")
+EXTRALABEL = re.compile(r"\\extralabel\{([^{}]*)\}\{")
+POOL_NAME = re.compile(r"\\(Sprout|Sapling|Orchard)Text(?:\{\})?")
+ANCHOR = re.compile(r"^[A-Za-z0-9]+$")
 
 
 def fail(message):
@@ -157,6 +166,85 @@ def entries(zips_dir):
     return rows
 
 
+def braced_group(text, start):
+    """The content of the brace group that opens at text[start] and the index
+    after its closing brace; (None, -1) when the braces do not balance before
+    the text ends. A backslash escapes the character after it."""
+    if start >= len(text) or text[start] != "{":
+        return None, -1
+    depth = 0
+    index = start
+    while index < len(text):
+        char = text[index]
+        if char == "\\":
+            index += 2
+            continue
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            if depth == 0:
+                return text[start + 1:index], index + 1
+        index += 1
+    return None, -1
+
+
+def heading_title(tex):
+    """The heading text as written, whitespace collapsed, with the pool-name
+    macros expanded; every other macro stays as TeX."""
+    return POOL_NAME.sub(lambda match: match.group(1), " ".join(tex.split()))
+
+
+def protocol_headings(zips_dir):
+    """The headings of protocol/protocol.tex in document order: the macros of
+    HEADING_LEVELS with their two brace groups, title and label, read across
+    line breaks; an extralabel whose second group opens the macro is the
+    heading's alias. Any other heading-like macro fails, so a new level
+    upstream is noticed rather than skipped."""
+    path = zips_dir / "protocol" / "protocol.tex"
+    lines = path.read_text(encoding="utf-8").splitlines()
+    headings = []
+    seen = set()
+    for number, line in enumerate(lines, 1):
+        like = HEADING_LIKE.search(line)
+        if not like:
+            continue
+        heading = HEADING.match(line, like.start())
+        if not heading:
+            fail(f"{path}:{number}: unknown heading macro {like.group()}; extend the parser")
+        text = line
+        joined = number
+        while True:
+            title, after_title = braced_group(text, heading.end() - 1)
+            label = None
+            if title is not None:
+                label, _ = braced_group(text, after_title)
+            if label is not None:
+                break
+            if joined >= len(lines) or joined - number >= 4:
+                fail(f"{path}:{number}: the heading's brace groups do not close within five lines")
+            text += " " + lines[joined]
+            joined += 1
+        alias = None
+        for extra in EXTRALABEL.finditer(line[: heading.start()]):
+            if extra.end() == heading.start():
+                alias = extra.group(1)
+        for anchor in (label, alias):
+            if anchor is None:
+                continue
+            if not ANCHOR.match(anchor):
+                fail(f"{path}:{number}: the anchor {anchor!r} is not a plain word")
+            if anchor in seen:
+                fail(f"{path}:{number}: the anchor {anchor} is already defined")
+            seen.add(anchor)
+        headings.append({"level": heading.group(1), "title": heading_title(title), "label": label, "line": number, "alias": alias})
+    return headings
+
+
+def anchors(headings):
+    return sorted(anchor for heading in headings for anchor in (heading["label"], heading["alias"]) if anchor)
+
+
 def cell(text):
     if "|" in text:
         fail(f"a table cell contains '|': {text!r}")
@@ -230,6 +318,44 @@ def render_by_area(rows, index):
     return "\n".join(lines)
 
 
+def render_spec_anchors(headings, commit, date):
+    source = REFERENCES / "spec-anchors.tsv"
+    by_anchor = {}
+    for heading in headings:
+        by_anchor[heading["label"]] = (heading, None)
+        if heading["alias"]:
+            by_anchor[heading["alias"]] = (heading, heading["alias"])
+    lines = [
+        f"Rendered from spec-anchors.tsv by scripts/index.py, with the titles and lines of protocol/protocol.tex at zips@{commit} ({date}). Do not edit.",
+        "",
+    ]
+    surfaces = {}
+    for row in read_tsv(source, ("surface", "anchor", "where", "caveat")):
+        names = row["anchor"].split(", ")
+        for name in names:
+            if name not in by_anchor:
+                fail(f"{source}: anchor {name} is not a label in protocol/protocol.tex")
+        surfaces.setdefault(row["surface"], []).append((row, [by_anchor[name] for name in names]))
+    for surface, surface_rows in surfaces.items():
+        lines += [f"## {surface}", ""]
+        lines += table(
+            ("Anchor", "Title", "Level", "Line", "Where", "Caveat"),
+            [
+                (
+                    ", ".join(f"{alias} (alias of {heading['label']})" if alias else heading["label"] for heading, alias in found),
+                    "; ".join(heading["title"] for heading, _ in found),
+                    ", ".join(heading["level"] for heading, _ in found),
+                    ", ".join(str(heading["line"]) for heading, _ in found),
+                    row["where"],
+                    row["caveat"],
+                )
+                for row, found in surface_rows
+            ],
+        )
+        lines.append("")
+    return "\n".join(lines)
+
+
 def render_deployments(index):
     source = REFERENCES / "deployments.tsv"
     lines = ["Rendered from deployments.tsv by scripts/index.py. Do not edit.", ""]
@@ -247,12 +373,19 @@ def render_deployments(index):
 def main():
     args = sys.argv[1:]
     check = "--check" in args
-    args = [arg for arg in args if arg != "--check"]
-    if len(args) != 1:
-        fail("usage: index.py [--check] <zips-dir>")
+    list_anchors = "--anchors" in args
+    args = [arg for arg in args if arg not in ("--check", "--anchors")]
+    if len(args) != 1 or (check and list_anchors):
+        fail("usage: index.py [--check] <zips-dir>, or index.py --anchors <zips-dir>")
     zips_dir = Path(args[0]).resolve()
     if not (zips_dir / "zips").is_dir():
         fail(f"{zips_dir} has no zips/ folder")
+    if not (zips_dir / "protocol" / "protocol.tex").is_file():
+        fail(f"{zips_dir} has no protocol/protocol.tex")
+    headings = protocol_headings(zips_dir)
+    if list_anchors:
+        print("\n".join(anchors(headings)))
+        return
     commit = git(zips_dir, "rev-parse", "HEAD")
     date = git(zips_dir, "log", "-1", "--format=%cs", "HEAD")
     rows = entries(zips_dir)
@@ -261,6 +394,7 @@ def main():
         REFERENCES / "index.md": render_index(rows, commit, date),
         REFERENCES / "by-area.md": render_by_area(rows, index),
         REFERENCES / "deployments.md": render_deployments(index),
+        REFERENCES / "spec-anchors.md": render_spec_anchors(headings, commit, date),
     }
     if check:
         stale = [path.name for path, text in outputs.items() if not path.is_file() or path.read_text(encoding="utf-8") != text]

@@ -32,6 +32,7 @@ revision, and the rows for them in `references/by-area.md` carry it.
 | Claim | Authority |
 |---|---|
 | A ZIP status or a normative rule | the `zips` checkout at the index's commit |
+| A consensus rule | `protocol/protocol.tex` at the index's commit, read at the anchor with the macro around the sentence; the ZIP that introduced the rule for the rationale |
 | An encoding or a constant a program produces | the crate at its pinned version |
 | A proto field name or number | the vendored `lightwallet-protocol` |
 | What is active now, an activation height | the node, which outranks the crate |
@@ -43,6 +44,33 @@ Standing example: ZIP 316 Revision 2 (Draft) defines `zu`, `tu`, `uvf` and `uvi`
 only (`uview`). `zcash_address 0.14.0-pre.1` on librustzcash `main` encodes both, and
 `zcash_keys` picks Revision 0 when the key is representable there and Revision 2 otherwise
 (`zcash_keys/src/keys.rs`, `encode`). A caveat without a version number is wrong somewhere.
+
+## The protocol specification
+
+For consensus rules the contract is the Zcash Protocol Specification, `protocol/protocol.tex`
+in the same checkout: one LaTeX source, built once per network upgrade. Three things to know
+before citing it.
+
+`protocol.pdf` on zips.z.cash is the NU6.2 build (`protocol/Makefile`, the `nu6_2` target),
+while NU6.3 is active on both networks. Text the source wraps in `\nusixthree{...}`,
+`\nusixthreeonwarditem{...}` or `\notbeforenusixthree{...}` is absent from it and present in
+`nu6_3.pdf`. Text that only carries `\setnusixthree` (a colour) prints in both builds: the
+Ironwood rows of the transaction field table are one case. So Ironwood text in `protocol.pdf`
+does not mean the NU6.3 rules are there.
+
+ZIPs 229, 235, 237, 258, 259 and 326 link `protocol.pdf` for the NU6.3 specification, and
+the latest tag of the specification is `v2026.7.0`. Read the source at the label, not a
+PDF: `grep -n '{txnconsensus}' protocol/protocol.tex` finds the heading, and the macro
+around a sentence says which upgrade it belongs to.
+
+Cite by anchor, never by section number: `Protocol specification, "Transaction Consensus
+Rules" (#txnconsensus), protocol.tex line <n>, zips@<short commit>` plus the quoted sentence
+and the macro that gates it, or "ungated". The anchor is the LaTeX label and survives
+rebuilds. The section number does not. The version a ZIP names in its own citation is the one
+of the day it was written.
+
+`references/spec-anchors.md` maps the implementation surfaces our reviews touch to the
+anchors to open, with one trap per row.
 
 ## How to cite
 
@@ -64,3 +92,5 @@ of the two.
   change and file, generated from the checkout at the commit in its first line.
 - `references/by-area.md`: the ZIPs each implementation surface rests on, one trap per row.
 - `references/deployments.md`: the activation ladder on both networks.
+- `references/spec-anchors.md`: the anchors of the protocol specification each implementation
+  surface rests on, with the heading's line at the index's commit and one trap per row.

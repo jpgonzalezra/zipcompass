@@ -9,6 +9,13 @@ encode a different revision than the one the ZIP describes. The generated index 
 `zcash/zips` commit it came from, and `make check` fails when the checkout and the index
 disagree.
 
+The skill also maps consensus code to the protocol specification, `protocol/protocol.tex` in
+the same checkout. The unit is the anchor (the LaTeX label a heading carries, and the fragment
+the code and the ZIPs link), never a section number. The map carries pointers into the source,
+not its text: `references/spec-anchors.md` lists the anchors each implementation surface rests
+on, with the line of the heading at the index's commit and the trap to know. `make check`
+verifies every anchor the skill names against the labels in the source.
+
 Install it in Claude Code with `/plugin install zipcompass --marketplace jpgonzalezra/zipcompass`,
 load it from a clone with `claude --plugin-dir <path to this repository>`, or link `skills/zips`
 into a project's `.claude/skills/`. The skill expects a checkout of
