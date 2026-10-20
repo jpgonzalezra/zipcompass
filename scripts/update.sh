@@ -106,7 +106,7 @@ start_ref=$(git -C "$project" symbolic-ref --short -q HEAD || git -C "$project" 
 baseline=main
 baseline_note='the local `main` (`--no-fetch`)'
 if [ "$fetch" = 1 ]; then
-  if git -C "$project" fetch -q origin; then
+  if git -c url.https://github.com/.insteadOf=git@github.com: -C "$project" fetch -q origin; then
     baseline=origin/main
     baseline_note='`origin/main`'
   else
