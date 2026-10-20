@@ -318,6 +318,44 @@ def render_by_area(rows, index):
     return "\n".join(lines)
 
 
+def render_spec_anchors(headings, commit, date):
+    source = REFERENCES / "spec-anchors.tsv"
+    by_anchor = {}
+    for heading in headings:
+        by_anchor[heading["label"]] = (heading, None)
+        if heading["alias"]:
+            by_anchor[heading["alias"]] = (heading, heading["alias"])
+    lines = [
+        f"Rendered from spec-anchors.tsv by scripts/index.py, with the titles and lines of protocol/protocol.tex at zips@{commit} ({date}). Do not edit.",
+        "",
+    ]
+    surfaces = {}
+    for row in read_tsv(source, ("surface", "anchor", "where", "caveat")):
+        names = row["anchor"].split(", ")
+        for name in names:
+            if name not in by_anchor:
+                fail(f"{source}: anchor {name} is not a label in protocol/protocol.tex")
+        surfaces.setdefault(row["surface"], []).append((row, [by_anchor[name] for name in names]))
+    for surface, surface_rows in surfaces.items():
+        lines += [f"## {surface}", ""]
+        lines += table(
+            ("Anchor", "Title", "Level", "Line", "Where", "Caveat"),
+            [
+                (
+                    ", ".join(f"{alias} (alias of {heading['label']})" if alias else heading["label"] for heading, alias in found),
+                    "; ".join(heading["title"] for heading, _ in found),
+                    ", ".join(heading["level"] for heading, _ in found),
+                    ", ".join(str(heading["line"]) for heading, _ in found),
+                    row["where"],
+                    row["caveat"],
+                )
+                for row, found in surface_rows
+            ],
+        )
+        lines.append("")
+    return "\n".join(lines)
+
+
 def render_deployments(index):
     source = REFERENCES / "deployments.tsv"
     lines = ["Rendered from deployments.tsv by scripts/index.py. Do not edit.", ""]
@@ -356,6 +394,7 @@ def main():
         REFERENCES / "index.md": render_index(rows, commit, date),
         REFERENCES / "by-area.md": render_by_area(rows, index),
         REFERENCES / "deployments.md": render_deployments(index),
+        REFERENCES / "spec-anchors.md": render_spec_anchors(headings, commit, date),
     }
     if check:
         stale = [path.name for path, text in outputs.items() if not path.is_file() or path.read_text(encoding="utf-8") != text]
