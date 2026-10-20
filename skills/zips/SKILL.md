@@ -34,7 +34,7 @@ revision, and the rows for them in `references/by-area.md` carry it.
 | A ZIP status or a normative rule | the `zips` checkout at the index's commit |
 | A consensus rule | `protocol/protocol.tex` at the index's commit, read at the anchor with the macro around the sentence; the ZIP that introduced the rule for the rationale |
 | An encoding or a constant a program produces | the crate at its pinned version |
-| A proto field name or number | the vendored `lightwallet-protocol` |
+| A proto field name or number | the `lightwallet-protocol` revision the project's protos come from |
 | What is active now, an activation height | the node, which outranks the crate |
 | An RPC contract: field, type, error behavior | zebra's source at the tag the node runs |
 
@@ -70,8 +70,8 @@ and the macro that gates it, or "ungated". The anchor is the LaTeX label and sur
 rebuilds. The section number does not. The version a ZIP names in its own citation is the one
 of the day it was written.
 
-`references/spec-anchors.md` maps the implementation surfaces our reviews touch to the
-anchors to open, with one trap per row.
+`references/spec-anchors.md` maps implementation surfaces to the anchors to open, with one
+trap per row.
 
 ## How to cite
 
@@ -83,9 +83,8 @@ checkout. Do not restate it from memory. Before citing, compare
 
 ## Briefs for other reviewers
 
-A brief that goes to another reviewer pastes the sections it relies on. codex runs with
-`--cd` and sees nothing outside that directory, so a skill in `.claude/` reaches one reviewer
-of the two.
+A brief that goes to another reviewer pastes the sections it relies on: a reviewer confined
+to one directory (codex with `--cd`, say) never sees a skill installed outside it.
 
 ## References
 
