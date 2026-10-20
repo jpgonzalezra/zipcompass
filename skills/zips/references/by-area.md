@@ -4,15 +4,15 @@ Rendered from by-area.tsv by scripts/index.py. Do not edit.
 
 | ZIP | Title | Revision | Status | Where | Caveat |
 |---|---|---|---|---|---|
-| 307 | Light Client Protocol for Payment Detection |  | Draft | lightwalletd-rs docs/protocol-references.md and src/compact.rs; lightwallet-protocol | Draft and deployed: the protocol every light wallet speaks today |
-| 225 | Version 5 Transaction Format |  | Final | lightwalletd-rs docs/protocol-references.md | v5 transaction format |
-| 229 | Version 6 Transaction Format |  | Draft | lightwalletd-rs docs/protocol-references.md | Draft and live: the v6 format NU6.3 introduced |
-| 244 | Transaction Identifier Non-Malleability |  | Final | lightwalletd-rs docs/protocol-references.md | txid and auth digests; v6 extends the digest tree |
-| 224 | Orchard Shielded Protocol |  | Final | lightwalletd-rs docs/protocol-references.md | Orchard actions in compact form |
-| 258 | Deployment of the NU6.3 Network Upgrade |  | Draft | lightwalletd-rs docs/protocol-references.md | NU6.3 deployment: Draft, active on mainnet since 3428143 |
-| 2005 | Ironwood Quantum Recoverability |  | Proposed | lightwalletd-rs docs/protocol-references.md | Ironwood pool; recoverable notes carry lead byte 0x03 |
-| 221 | FlyClient - Consensus-Layer Changes |  | Final | lightwalletd-rs docs/protocol-references.md | FlyClient commitments in the block header |
-| 209 | Prohibit Out-of-Range Chain Value Pool Balances |  | Final | lightwalletd-rs docs/protocol-references.md | chain value pool balances |
+| 307 | Light Client Protocol for Payment Detection |  | Draft | zcash_client_backend::{proto, scanning}; lightwallet-protocol walletrpc/compact_formats.proto | Draft and deployed: the protocol every light wallet speaks today |
+| 225 | Version 5 Transaction Format |  | Final | zcash_primitives::transaction | v5 transaction format |
+| 229 | Version 6 Transaction Format |  | Draft | zcash_primitives::transaction | Draft and live: the v6 format NU6.3 introduced |
+| 244 | Transaction Identifier Non-Malleability |  | Final | zcash_primitives::transaction::txid | txid and auth digests; v6 extends the digest tree |
+| 224 | Orchard Shielded Protocol |  | Final | zcash_client_backend::proto (CompactOrchardAction conversions); lightwallet-protocol walletrpc/compact_formats.proto | Orchard actions in compact form |
+| 258 | Deployment of the NU6.3 Network Upgrade |  | Draft | zcash_protocol::consensus | NU6.3 deployment: Draft, active on mainnet since 3428143 |
+| 2005 | Ironwood Quantum Recoverability |  | Proposed | zcash_client_backend::scanning (scanning/compact.rs) | Ironwood pool; recoverable notes carry lead byte 0x03 |
+| 221 | FlyClient - Consensus-Layer Changes |  | Final | zcash_history; zebra-chain history_tree.rs, primitives/zcash_history.rs, block/commitment.rs | FlyClient commitments in the block header |
+| 209 | Prohibit Out-of-Range Chain Value Pool Balances |  | Final | zebra-chain value_balance.rs | chain value pool balances |
 
 ## Transaction parsing and txids
 

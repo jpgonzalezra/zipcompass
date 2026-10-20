@@ -1,13 +1,13 @@
 surface	zip	revision	status	where	caveat
-Compact blocks and the light-client protocol	307		Draft	lightwalletd-rs docs/protocol-references.md and src/compact.rs; lightwallet-protocol	Draft and deployed: the protocol every light wallet speaks today
-Compact blocks and the light-client protocol	225		Final	lightwalletd-rs docs/protocol-references.md	v5 transaction format
-Compact blocks and the light-client protocol	229		Draft	lightwalletd-rs docs/protocol-references.md	Draft and live: the v6 format NU6.3 introduced
-Compact blocks and the light-client protocol	244		Final	lightwalletd-rs docs/protocol-references.md	txid and auth digests; v6 extends the digest tree
-Compact blocks and the light-client protocol	224		Final	lightwalletd-rs docs/protocol-references.md	Orchard actions in compact form
-Compact blocks and the light-client protocol	258		Draft	lightwalletd-rs docs/protocol-references.md	NU6.3 deployment: Draft, active on mainnet since 3428143
-Compact blocks and the light-client protocol	2005		Proposed	lightwalletd-rs docs/protocol-references.md	Ironwood pool; recoverable notes carry lead byte 0x03
-Compact blocks and the light-client protocol	221		Final	lightwalletd-rs docs/protocol-references.md	FlyClient commitments in the block header
-Compact blocks and the light-client protocol	209		Final	lightwalletd-rs docs/protocol-references.md	chain value pool balances
+Compact blocks and the light-client protocol	307		Draft	zcash_client_backend::{proto, scanning}; lightwallet-protocol walletrpc/compact_formats.proto	Draft and deployed: the protocol every light wallet speaks today
+Compact blocks and the light-client protocol	225		Final	zcash_primitives::transaction	v5 transaction format
+Compact blocks and the light-client protocol	229		Draft	zcash_primitives::transaction	Draft and live: the v6 format NU6.3 introduced
+Compact blocks and the light-client protocol	244		Final	zcash_primitives::transaction::txid	txid and auth digests; v6 extends the digest tree
+Compact blocks and the light-client protocol	224		Final	zcash_client_backend::proto (CompactOrchardAction conversions); lightwallet-protocol walletrpc/compact_formats.proto	Orchard actions in compact form
+Compact blocks and the light-client protocol	258		Draft	zcash_protocol::consensus	NU6.3 deployment: Draft, active on mainnet since 3428143
+Compact blocks and the light-client protocol	2005		Proposed	zcash_client_backend::scanning (scanning/compact.rs)	Ironwood pool; recoverable notes carry lead byte 0x03
+Compact blocks and the light-client protocol	221		Final	zcash_history; zebra-chain history_tree.rs, primitives/zcash_history.rs, block/commitment.rs	FlyClient commitments in the block header
+Compact blocks and the light-client protocol	209		Final	zebra-chain value_balance.rs	chain value pool balances
 Transaction parsing and txids	225		Final	zcash_primitives::transaction	v5 format
 Transaction parsing and txids	229		Draft	zcash_primitives::transaction	Draft and live: v6, ungated in the crate
 Transaction parsing and txids	244		Final	zcash_primitives::transaction::txid	non-malleable txids; the crate computes the v6 extension

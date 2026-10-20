@@ -40,10 +40,11 @@ revision, and the rows for them in `references/by-area.md` carry it.
 
 When two sources disagree and both are right in their own terms, say both, with versions.
 Standing example: ZIP 316 Revision 2 (Draft) defines `zu`, `tu`, `uvf` and `uvi`.
-`zcash_address 0.13.0`, the version in lightwalletd-rs's `Cargo.lock`, encodes Revision 0
-only (`uview`). `zcash_address 0.14.0-pre.1` on librustzcash `main` encodes both, and
-`zcash_keys` picks Revision 0 when the key is representable there and Revision 2 otherwise
-(`zcash_keys/src/keys.rs`, `encode`). A caveat without a version number is wrong somewhere.
+`zcash_address 0.13.0` (2026-07-09, the last release before the 0.14.0 pre-releases)
+encodes Revision 0 only (`uview`). `zcash_address 0.14.0-pre.1` on librustzcash `main`
+encodes both, and `zcash_keys` picks Revision 0 when the key is representable there and
+Revision 2 otherwise (`zcash_keys/src/keys.rs`, `encode`). A caveat without a version number
+is wrong somewhere.
 
 ## The protocol specification
 

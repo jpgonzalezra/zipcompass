@@ -16,19 +16,19 @@ Rendered from spec-anchors.tsv by scripts/index.py, with the titles and lines of
 
 | Anchor | Title | Level | Line | Where | Caveat |
 |---|---|---|---|---|---|
-| txnidentifiers | Transaction Identifiers | subsubsection | 13608 | zebra-chain src/transaction/hash.rs; zcash_client_backend src/proto/compact_formats.rs; lightwalletd-rs docs/protocol-references.md | v5 txid per ZIP 244, v6 per ZIP 229, which adds the Ironwood digest to the ZIP 244 tree; the range cites each |
+| txnidentifiers | Transaction Identifiers | subsubsection | 13608 | zebra-chain src/transaction/hash.rs; zcash_client_backend src/proto/compact_formats.rs | v5 txid per ZIP 244, v6 per ZIP 229, which adds the Ironwood digest to the ZIP 244 tree; the range cites each |
 
 ## Block header
 
 | Anchor | Title | Level | Line | Where | Caveat |
 |---|---|---|---|---|---|
-| blockheader | Block Header Encoding and Consensus | subsection | 14172 | zebra-chain src/block/serialize.rs, src/parameters/network_upgrade.rs; zcash_protocol src/constants.rs; lightwalletd-rs docs/protocol-references.md | hashBlockCommitments per ZIP 221 and ZIP 244 |
+| blockheader | Block Header Encoding and Consensus | subsection | 14172 | zebra-chain src/block/serialize.rs, src/block/commitment.rs, src/parameters/network_upgrade.rs; zcash_protocol src/constants.rs | hashBlockCommitments per ZIP 221 and ZIP 244 |
 
 ## Spend, Output and Action encodings
 
 | Anchor | Title | Level | Line | Where | Caveat |
 |---|---|---|---|---|---|
-| spendencodingandconsensus, outputencodingandconsensus, actionencodingandconsensus | Spend Description Encoding and Consensus; Output Description Encoding and Consensus; Action Description Encoding and Consensus | subsection, subsection, subsection | 13958, 14022, 14087 | zebra-chain src/sapling/spend.rs, src/sapling/output.rs, src/orchard/action.rs; zcash_client_backend src/proto/compact_formats.rs; lightwalletd-rs docs/protocol-references.md | the compact form is ZIP 307; the Ironwood bundle reuses the Action encoding |
+| spendencodingandconsensus, outputencodingandconsensus, actionencodingandconsensus | Spend Description Encoding and Consensus; Output Description Encoding and Consensus; Action Description Encoding and Consensus | subsection, subsection, subsection | 13958, 14022, 14087 | zebra-chain src/sapling/spend.rs, src/sapling/output.rs, src/orchard/action.rs; zcash_client_backend src/proto/compact_formats.rs | the compact form is ZIP 307; the Ironwood bundle reuses the Action encoding |
 
 ## Funding streams and subsidies
 
@@ -58,4 +58,4 @@ Rendered from spec-anchors.tsv by scripts/index.py, with the titles and lines of
 
 | Anchor | Title | Level | Line | Where | Caveat |
 |---|---|---|---|---|---|
-| merkletree (alias of notecommitmenttrees), notecommitmenttrees | Note Commitment Trees; Note Commitment Trees | subsection, subsection | 4313, 4313 | zebra-chain src/sapling/tree.rs, src/orchard/tree.rs; lightwalletd-rs docs/protocol-references.md | `merkletree` is the `\extralabel` alias the code links; the heading is `notecommitmenttrees` |
+| merkletree (alias of notecommitmenttrees), notecommitmenttrees | Note Commitment Trees; Note Commitment Trees | subsection, subsection | 4313, 4313 | zebra-chain src/sapling/tree.rs, src/orchard/tree.rs | `merkletree` is the `\extralabel` alias the code links; the heading is `notecommitmenttrees` |
