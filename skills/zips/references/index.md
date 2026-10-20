@@ -1,4 +1,4 @@
-Generated from zcash/zips at 3af03aa3ad991874d86b8cf35919bc9b4671e8ba (2026-10-08) by scripts/index.py. Do not edit.
+Generated from zcash/zips at a34cfc091434275120ff017c92c3b50d3cef623a (2026-10-16) by scripts/index.py. Do not edit.
 
 130 numbered ZIPs and 6 drafts. Statuses of the numbered ZIPs: 37 Draft, 32 Final, 24 Reserved, 14 Obsolete, 7 Active, 6 Withdrawn, 5 Proposed, 5 per-revision.
 
@@ -24,18 +24,18 @@ Generated from zcash/zips at 3af03aa3ad991874d86b8cf35919bc9b4671e8ba (2026-10-0
 | 204 | Zcash P2P Network Protocol | Draft | Network | 2026-02-05 | 2026-07-21 9443775b | zips/zip-0204.rst |  |
 | 205 | Deployment of the Sapling Network Upgrade | Final | Consensus / Network | 2018-10-08 | 2026-02-10 7b9e678f | zips/zip-0205.rst |  |
 | 206 | Deployment of the Blossom Network Upgrade | Final | Consensus / Network | 2019-07-29 | 2026-02-10 7b9e678f | zips/zip-0206.rst |  |
-| 207 | Funding Streams | [Revision 0: Canopy, Revision 1: NU6] Final, [Revision 2: NU7] Draft | Consensus | 2019-01-04 | 2026-10-06 2cb2e451 | zips/zip-0207.rst |  |
+| 207 | Funding Streams | [Revision 0: Canopy, Revision 1: NU6] Final, [Revision 2: NU7] Draft | Consensus | 2019-01-04 | 2026-10-15 3ae35a0b | zips/zip-0207.rst |  |
 | 208 | Shorter Block Target Spacing | Final | Consensus | 2019-01-10 | 2026-09-30 e2c80831 | zips/zip-0208.rst |  |
 | 209 | Prohibit Out-of-Range Chain Value Pool Balances | Final | Consensus | 2019-02-25 | 2026-08-12 7b2806d8 | zips/zip-0209.rst |  |
 | 210 | Sapling Anchor Deduplication within Transactions | Withdrawn | Consensus | 2019-03-27 | 2026-02-10 7b9e678f | zips/zip-0210.rst |  |
 | 211 | Disabling Addition of New Value to the Sprout Chain Value Pool | Final | Consensus | 2019-03-29 | 2026-07-09 02a0564c | zips/zip-0211.rst |  |
 | 212 | Allow Recipient to Derive Ephemeral Secret from Note Plaintext | Final | Consensus | 2019-03-31 | 2026-02-10 7b9e678f | zips/zip-0212.rst |  |
 | 213 | Shielded Coinbase | Final | Consensus | 2019-03-30 | 2026-08-12 7b2806d8 | zips/zip-0213.rst |  |
-| 214 | Consensus rules for a Zcash Development Fund | [Revision 0: Canopy, Revision 1: NU6] Final, [Revision 2: NU6.1] Proposed, [Revision 3: NU7] Draft | Consensus | 2020-02-28 | 2026-10-06 2ce157b1 | zips/zip-0214.rst |  |
+| 214 | Consensus rules for a Zcash Development Fund | [Revision 0: Canopy, Revision 1: NU6] Final, [Revision 2: NU6.1] Proposed, [Revision 3: NU7] Draft | Consensus | 2020-02-28 | 2026-10-15 93237d71 | zips/zip-0214.rst |  |
 | 215 | Explicitly Defining and Modifying Ed25519 Validation Rules | Final | Consensus | 2020-04-27 | 2024-11-12 ba09951a | zips/zip-0215.rst |  |
 | 216 | Require Canonical Jubjub Point Encodings | Final | Consensus | 2021-02-11 | 2026-02-10 7b9e678f | zips/zip-0216.rst |  |
 | 217 | Aggregate Signatures | Reserved | Consensus |  | 2026-03-24 dfe56451 | zips/zip-0217.rst |  |
-| 218 | 25-second Block Target Spacing | Draft | Consensus | 2026-03-13 | 2026-09-30 47752697 | zips/zip-0218.md |  |
+| 218 | 25-second Block Target Spacing | Draft | Consensus | 2026-03-13 | 2026-10-15 1d607331 | zips/zip-0218.md |  |
 | 219 | Disabling Addition of New Value to the Sapling Chain Value Pool | Reserved | Consensus |  | 2026-02-10 7b9e678f | zips/zip-0219.rst |  |
 | 220 | Zcash Shielded Assets | Withdrawn | Consensus |  | 2026-02-10 7b9e678f | zips/zip-0220.rst |  |
 | 221 | FlyClient - Consensus-Layer Changes | Final | Consensus | 2019-03-30 | 2026-02-10 7b9e678f | zips/zip-0221.rst |  |
@@ -50,9 +50,9 @@ Generated from zcash/zips at 3af03aa3ad991874d86b8cf35919bc9b4671e8ba (2026-10-0
 | 231 | Memo Bundles | Draft | Consensus / Wallet | 2024-04-26 | 2026-09-29 431cda49 | zips/zip-0231.md |  |
 | 233 | Network Sustainability Mechanism: Removing Funds From Circulation | Draft | Consensus / Ecosystem | 2023-08-16 | 2026-09-29 431cda49 | zips/zip-0233.md |  |
 | 234 | Network Sustainability Mechanism: Issuance Smoothing | Draft | Consensus | 2023-08-23 | 2026-09-29 431cda49 | zips/zip-0234.md |  |
-| 235 | Remove 60% of Transaction Fees From Circulation | Draft | Consensus / Ecosystem | 2023-09-21 | 2026-09-29 c1bea5ef | zips/zip-0235.md |  |
+| 235 | Remove 60% of Transaction Fees From Circulation | Draft | Consensus / Ecosystem | 2023-09-21 | 2026-10-15 b44c23b7 | zips/zip-0235.md |  |
 | 236 | Blocks should balance exactly | Final | Consensus | 2024-07-02 | 2026-02-10 7b9e678f | zips/zip-0236.rst |  |
-| 237 | Network Sustainability Mechanism: Halving-Preserving Issuance | Draft | Consensus | 2026-08-19 | 2026-09-30 ec5693b4 | zips/zip-0237.md |  |
+| 237 | Network Sustainability Mechanism: Halving-Preserving Issuance | Draft | Consensus | 2026-08-19 | 2026-10-15 9d2e390b | zips/zip-0237.md |  |
 | 239 | Relay of Version 5 Transactions | Final | Network | 2021-05-29 | 2026-02-10 7b9e678f | zips/zip-0239.rst |  |
 | 240 | Standard Transaction Rules | Reserved | Consensus |  | 2026-03-24 13a7958e | zips/zip-0240.md |  |
 | 243 | Transaction Signature Validation for Sapling | Final | Consensus | 2018-04-10 | 2026-02-10 7b9e678f | zips/zip-0243.rst |  |
@@ -69,7 +69,7 @@ Generated from zcash/zips at 3af03aa3ad991874d86b8cf35919bc9b4671e8ba (2026-10-0
 | 256 | Deployment of Consensus Bug Fixes Between NU6.1 and NU6.2 | Final | Consensus / Network | 2026-06-09 | 2026-07-09 662dc87f | zips/zip-0256.md |  |
 | 257 | Deployment of the Orchard Temporary Vulnerability Mitigation and NU6.2 Network Upgrade | Final | Consensus / Network | 2026-06-09 | 2026-07-05 65faa68d | zips/zip-0257.md |  |
 | 258 | Deployment of the NU6.3 Network Upgrade | Draft | Consensus / Network | 2026-06-19 | 2026-07-20 b93e824b | zips/zip-0258.md |  |
-| 259 | Deployment of the NU7 Network Upgrade | Draft | Consensus / Network | 2026-09-15 | 2026-09-30 b344587a | zips/zip-0259.md |  |
+| 259 | Deployment of the NU7 Network Upgrade | Draft | Consensus / Network | 2026-09-15 | 2026-10-15 1ee97479 | zips/zip-0259.md |  |
 | 260 | Extending Block Messages with Additional Authentication Data | Reserved | Network |  | 2026-03-24 13a7958e | zips/zip-0260.md |  |
 | 270 | Key Rotation for Tracked Signing Keys | Reserved | Consensus | 2025-09-16 | 2026-02-10 7b9e678f | zips/zip-0270.md |  |
 | 271 | Dev Fund Extension and One-Time Disbursement | Proposed | Consensus / Process | 2025-02-19 | 2026-09-24 32f3a0cb | zips/zip-0271.md |  |
@@ -88,7 +88,7 @@ Generated from zcash/zips at 3af03aa3ad991874d86b8cf35919bc9b4671e8ba (2026-10-0
 | 312 | FROST for Spend Authorization Multisignatures | Draft | Wallet | 2022-08-dd | 2024-11-12 ba09951a | zips/zip-0312.rst |  |
 | 313 | Reduce Conventional Transaction Fee to 1000 zatoshis | Obsolete | Wallet | 2020-10-11 | 2024-07-16 26f16f44 | zips/zip-0313.rst |  |
 | 314 | Privacy upgrades to the Zcash light client protocol | Reserved | Standards / Wallet |  | 2026-02-10 7b9e678f | zips/zip-0314.rst |  |
-| 315 | Best Practices for Wallet Implementations | Draft | Wallet |  | 2026-03-12 094bb057 | zips/zip-0315.rst |  |
+| 315 | Best Practices for Wallet Implementations | Draft | Wallet | 2022-04-26 | 2026-10-13 f1011504 | zips/zip-0315.rst |  |
 | 316 | Unified Addresses and Unified Viewing Keys | [Revision 0] Active, [Revision 1] Withdrawn, [Revision 2] Draft | Standards / RPC / Wallet | 2021-04-07 | 2026-06-24 a9b838e8 | zips/zip-0316.rst |  |
 | 317 | Proportional Transfer Fee Mechanism | [Revision 0] Active, [Revision 1: NU6.3] Draft, [Revision 2] Draft | Standards / Wallet | 2022-08-15 | 2026-06-30 561b5b4b | zips/zip-0317.rst | Obsoletes ZIP 313 |
 | 318 | Orchard to Ironwood Migration | Draft | Wallet | 2026-06-16 | 2026-07-31 60db9f1e | zips/zip-0318.md |  |
@@ -127,12 +127,12 @@ Generated from zcash/zips at 3af03aa3ad991874d86b8cf35919bc9b4671e8ba (2026-10-0
 | 1016 | Community and Coinholder Funding Model | Proposed | Consensus / Process | 2025-02-19 | 2026-09-24 32f3a0cb | zips/zip-1016.md |  |
 | 2001 | Lockbox Funding Streams | Final | Consensus | 2024-07-02 | 2026-02-10 7b9e678f | zips/zip-2001.rst |  |
 | 2002 | Explicit Fees | Draft | Consensus |  | 2026-09-01 bccf8f74 | zips/zip-2002.rst |  |
-| 2003 | Disallow version 4 transactions | Draft | Consensus |  | 2026-10-01 37297086 | zips/zip-2003.rst |  |
+| 2003 | Disallow version 4 transactions | Draft | Consensus | 2024-10-31 | 2026-10-15 9f6b5cf1 | zips/zip-2003.rst |  |
 | 2004 | Remove the dependency of consensus on note encryption | Draft | Consensus | 2024-10-22 | 2026-02-10 7b9e678f | zips/zip-2004.rst |  |
 | 2005 | Ironwood Quantum Recoverability | Proposed | Consensus | 2025-03-31 | 2026-08-25 840b3f39 | zips/zip-2005.md |  |
 | 2006 | Restricting Transfers into the Orchard Pool | Reserved | Consensus | 2025-06-20 | 2026-07-09 580d565c | zips/zip-2006.md |  |
 | 2007 | Quantum Recoverability for a Subset of Transparent Addresses | Reserved | Consensus | 2025-07-05 | 2026-07-09 580d565c | zips/zip-2007.md |  |
-| 2008 | Update to `FS_FPF_ZCG_H3` address list | Draft | Consensus | 2026-09-24 | 2026-10-06 2cb2e451 | zips/zip-2008.md |  |
+| 2008 | Update to `FS_FPF_ZCG_H3` address list | Draft | Consensus | 2026-09-24 | 2026-10-15 8551b07e | zips/zip-2008.md |  |
 | 2009 | Reduce Marginal Fee to 1000 Zatoshis and Raise the Weight Ratio Cap to 10 | Draft | Standards / Wallet | 2026-04-06 | 2026-10-08 51df2a40 | zips/zip-2009.md | Updates ZIP 317 |
 | draft-arya-dairaemma-disable-addition-of-transparent-chain-value | Disabling Addition of New Value to the Transparent Chain Value Pool | Draft | Consensus | 2025-08-13 | 2026-02-10 7b9e678f | zips/draft-arya-dairaemma-disable-addition-of-transparent-chain-value.md |  |
 | draft-arya-jvff-p2p-quic-transport | Version 2 Zcash P2P Network Protocol | Draft | Network | 2026-07-31 | 2026-08-20 65ec4f74 | zips/draft-arya-jvff-p2p-quic-transport.md |  |
