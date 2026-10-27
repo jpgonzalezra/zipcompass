@@ -1,4 +1,4 @@
-Rendered from deployments.tsv by scripts/index.py. Do not edit.
+Rendered from deployments.tsv by scripts/index.py, with the heights the ZIPs set. Do not edit.
 
 | Upgrade | ZIP | ZIP status | Network | Height |
 |---|---|---|---|---|

@@ -1,13 +1,13 @@
-upgrade	zip	network	height
-NU5	252	mainnet	1687104
-NU5	252	testnet	1842420
-NU6	253	mainnet	2726400
-NU6	253	testnet	2976000
-NU6.1	255	mainnet	3146400
-NU6.1	255	testnet	3536500
-NU6.2	257	mainnet	3364600
-NU6.2	257	testnet	4052000
-NU6.3	258	mainnet	3428143
-NU6.3	258	testnet	4134000
-NU7	259	mainnet	pending
-NU7	259	testnet	4465026
+upgrade	zip	network
+NU5	252	mainnet
+NU5	252	testnet
+NU6	253	mainnet
+NU6	253	testnet
+NU6.1	255	mainnet
+NU6.1	255	testnet
+NU6.2	257	mainnet
+NU6.2	257	testnet
+NU6.3	258	mainnet
+NU6.3	258	testnet
+NU7	259	mainnet
+NU7	259	testnet

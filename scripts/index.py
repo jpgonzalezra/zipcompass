@@ -32,6 +32,12 @@ HEADING_LIKE = re.compile(r"\\l[a-z]*(?:section|part|paragraph)\{")
 EXTRALABEL = re.compile(r"\\extralabel\{([^{}]*)\}\{")
 POOL_NAME = re.compile(r"\\(Sprout|Sapling|Orchard)Text(?:\{\})?")
 ANCHOR = re.compile(r"^[A-Za-z0-9]+$")
+REVISION = re.compile(r"^R[0-9]+$")
+REVISION_GROUP = re.compile(r"\[([^\]]*)\] ([A-Za-z]+)")
+REVISION_NUMBER = re.compile(r"\bRevision ([0-9]+)\b")
+ACTIVATION = re.compile(r"^ACTIVATION_HEIGHT \((.+)\)\s*$")
+NETWORK_HEIGHT = re.compile(r"^[:\s]*(Mainnet|Testnet)\b[^:]*:\s*(.*?)\s*$")
+NETWORKS = ("mainnet", "testnet")
 
 
 def fail(message):
@@ -297,13 +303,94 @@ def read_tsv(path, columns):
     return rows
 
 
+def revision_statuses(status):
+    """'[Revision 0: Canopy, Revision 1: NU6] Final, [Revision 2: NU7] Draft'
+    -> {'R0': 'Final', 'R1': 'Final', 'R2': 'Draft'}"""
+    statuses = {}
+    for revisions, word in REVISION_GROUP.findall(status):
+        for number in REVISION_NUMBER.findall(revisions):
+            statuses[f"R{number}"] = word
+    return statuses
+
+
+def row_status(row, index, source):
+    """The status of the ZIP a row cites, of the row's revision when the ZIP
+    has one status per revision."""
+    zip_number, revision = row["zip"], row["revision"]
+    if zip_number not in index:
+        fail(f"{source}: ZIP {zip_number} is not in the index")
+    if revision and not REVISION.match(revision):
+        fail(f"{source}: ZIP {zip_number} has the revision {revision!r}, expected R<n>")
+    status = index[zip_number]["status"]
+    if not status.startswith("[Revision"):
+        if revision:
+            fail(f"{source}: ZIP {zip_number} has one status, the row must not name a revision")
+        return status
+    if not revision:
+        fail(f"{source}: ZIP {zip_number} has one status per revision, the row needs one")
+    statuses = revision_statuses(status)
+    if revision not in statuses:
+        fail(f"{source}: ZIP {zip_number} has no Revision {revision[1:]} in the index")
+    return statuses[revision]
+
+
+def activation_heights(zips_dir, entry, upgrade):
+    """The heights under the ZIP's 'ACTIVATION_HEIGHT (<upgrade>)' line, by
+    network. The block closes at the next line that starts at column 0 with
+    neither a space nor ':', which keeps the protocol version numbers out. A
+    value is a number or starts with 'TBD', which is pending; anything else
+    fails, so a height upstream reformats is noticed rather than read as
+    pending."""
+    path = zips_dir / entry["file"]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    starts = [number for number, line in enumerate(lines) if (match := ACTIVATION.match(line)) and match.group(1) == upgrade]
+    if len(starts) != 1:
+        fail(f"{path}: expected one 'ACTIVATION_HEIGHT ({upgrade})' line, found {len(starts)}")
+    heights = {}
+    for line in lines[starts[0] + 1:]:
+        if line and line[0] not in " :":
+            break
+        match = NETWORK_HEIGHT.match(line)
+        if not match:
+            continue
+        network, value = match.group(1).lower(), match.group(2)
+        if network in heights:
+            fail(f"{path}: two {match.group(1)} values under ACTIVATION_HEIGHT ({upgrade})")
+        if not value.isdigit() and not value.startswith("TBD"):
+            fail(f"{path}: the {match.group(1)} height of {upgrade} is {value!r}, expected a number or TBD")
+        heights[network] = value if value.isdigit() else "pending"
+    return heights
+
+
+def deployments(zips_dir, index):
+    """The rows of deployments.tsv in order, each with its height from the ZIP."""
+    source = REFERENCES / "deployments.tsv"
+    rows = read_tsv(source, ("upgrade", "zip", "network"))
+    blocks = {}
+    seen = set()
+    for row in rows:
+        if row["zip"] not in index:
+            fail(f"{source}: ZIP {row['zip']} is not in the index")
+        if row["network"] not in NETWORKS:
+            fail(f"{source}: unknown network {row['network']!r}, expected one of {', '.join(NETWORKS)}")
+        if (row["upgrade"], row["network"]) in seen:
+            fail(f"{source}: two rows for {row['upgrade']} {row['network']}")
+        seen.add((row["upgrade"], row["network"]))
+        key = (row["zip"], row["upgrade"])
+        if key not in blocks:
+            blocks[key] = activation_heights(zips_dir, index[row["zip"]], row["upgrade"])
+        if row["network"] not in blocks[key]:
+            fail(f"{index[row['zip']]['file']}: no {row['network'].capitalize()} line under ACTIVATION_HEIGHT ({row['upgrade']})")
+        row["height"] = blocks[key][row["network"]]
+    return rows
+
+
 def render_by_area(rows, index):
     source = REFERENCES / "by-area.tsv"
     lines = ["Rendered from by-area.tsv by scripts/index.py. Do not edit.", ""]
     surfaces = {}
-    for row in read_tsv(source, ("surface", "zip", "revision", "status", "where", "caveat")):
-        if row["zip"] not in index:
-            fail(f"{source}: ZIP {row['zip']} is not in the index")
+    for row in read_tsv(source, ("surface", "zip", "revision", "where", "caveat")):
+        row["status"] = row_status(row, index, source)
         surfaces.setdefault(row["surface"], []).append(row)
     for surface, surface_rows in surfaces.items():
         lines += [f"## {surface}", ""]
@@ -356,13 +443,8 @@ def render_spec_anchors(headings, commit, date):
     return "\n".join(lines)
 
 
-def render_deployments(index):
-    source = REFERENCES / "deployments.tsv"
-    lines = ["Rendered from deployments.tsv by scripts/index.py. Do not edit.", ""]
-    rows = read_tsv(source, ("upgrade", "zip", "network", "height"))
-    for row in rows:
-        if row["zip"] not in index:
-            fail(f"{source}: ZIP {row['zip']} is not in the index")
+def render_deployments(rows, index):
+    lines = ["Rendered from deployments.tsv by scripts/index.py, with the heights the ZIPs set. Do not edit.", ""]
     lines += table(
         ("Upgrade", "ZIP", "ZIP status", "Network", "Height"),
         [(row["upgrade"], row["zip"], index[row["zip"]]["status"], row["network"], row["height"]) for row in rows],
@@ -393,7 +475,7 @@ def main():
     outputs = {
         REFERENCES / "index.md": render_index(rows, commit, date),
         REFERENCES / "by-area.md": render_by_area(rows, index),
-        REFERENCES / "deployments.md": render_deployments(index),
+        REFERENCES / "deployments.md": render_deployments(deployments(zips_dir, index), index),
         REFERENCES / "spec-anchors.md": render_spec_anchors(headings, commit, date),
     }
     if check:

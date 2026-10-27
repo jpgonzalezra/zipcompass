@@ -233,8 +233,11 @@ rows_section() {
   if [ -n "$rows" ]; then
     echo 'Lines of `by-area.tsv` whose ZIP changed in this range. The statuses passed `check.sh`. Whether each caveat still holds is for a reader to check.'
     echo
-    echo "| Surface | ZIP | Revision | Status | Where | Caveat |"
-    echo "|---|---|---|---|---|---|"
+    awk -F'\t' 'NR == 1 {
+      header = "|"; rule = "|"
+      for (i = 1; i <= NF; i++) { header = header " " $i " |"; rule = rule "---|" }
+      print header; print rule; exit
+    }' "$project/$references/by-area.tsv"
     echo "$rows"
   else
     echo 'No line of `by-area.tsv` cites a ZIP that changed.'
