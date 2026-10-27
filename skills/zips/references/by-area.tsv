@@ -1,51 +1,51 @@
-surface	zip	revision	where	caveat
-Compact blocks and the light-client protocol	307		zcash_client_backend::{proto, scanning}; lightwallet-protocol walletrpc/compact_formats.proto	Draft and deployed: the protocol every light wallet speaks today
-Compact blocks and the light-client protocol	225		zcash_primitives::transaction	v5 transaction format
-Compact blocks and the light-client protocol	229		zcash_primitives::transaction	Draft and live: the v6 format NU6.3 introduced
-Compact blocks and the light-client protocol	244		zcash_primitives::transaction::txid	txid and auth digests; v6 extends the digest tree
-Compact blocks and the light-client protocol	224		zcash_client_backend::proto (CompactOrchardAction conversions); lightwallet-protocol walletrpc/compact_formats.proto	Orchard actions in compact form
-Compact blocks and the light-client protocol	258		zcash_protocol::consensus	NU6.3 deployment: Draft, active on mainnet since 3428143
-Compact blocks and the light-client protocol	2005		zcash_client_backend::scanning (scanning/compact.rs)	Ironwood pool; recoverable notes carry lead byte 0x03
-Compact blocks and the light-client protocol	221		zcash_history; zebra-chain history_tree.rs, primitives/zcash_history.rs, block/commitment.rs	FlyClient commitments in the block header
-Compact blocks and the light-client protocol	209		zebra-chain value_balance.rs	chain value pool balances
-Transaction parsing and txids	225		zcash_primitives::transaction	v5 format
-Transaction parsing and txids	229		zcash_primitives::transaction	Draft and live: v6, ungated in the crate
-Transaction parsing and txids	244		zcash_primitives::transaction::txid	non-malleable txids; the crate computes the v6 extension
-Transaction parsing and txids	2003		zcash_primitives::transaction	planned for NU7: the version number MUST be 5 or 6 from NU7 onward
-Fees, input selection, dust	317	R0	zcash_primitives::transaction::fees::zip317; zcash_client_backend::fees::zip317	the fee rule in force; marginal fee 5000 in the crate
-Fees, input selection, dust	317	R1	zcash_client_backend::fees	adds Ironwood-pool actions to logical_actions (NU6.3)
-Fees, input selection, dust	317	R2	zcash_client_backend::fees	adds fee handling for memo bundles (ZIP 231)
-Fees, input selection, dust	2009		zcash_primitives::transaction::fees::zip317	wallets SHOULD adopt marginal_fee 1000 at mainnet 3590000; the crate still carries 5000
-Fees, input selection, dust	315		zcash_client_backend::data_api::wallet::input_selection (SpendPolicy, GreedyInputSelector)	"Information leakage for transfers between pools": wallets MUST NOT automatically combine funds across pools to satisfy a transfer. librustzcash main (3c76c2d822, 2026-10-09) leaves it to the caller: the default SpendPolicy permits every pool and the selector may combine them; restrict SpendPolicy to one pool, or use DustAction::AddDustToFee, to stay in one pool
-Pool migration	318		zcash_pool_migration; zcash_protocol::zip318	Orchard to Ironwood migration, not a payments ZIP
-Addresses, keys, viewing keys	316	R0	zcash_address; zcash_keys::keys	what zcash_address 0.13.0 encodes (uview)
-Addresses, keys, viewing keys	316	R2	zcash_address 0.14.0-pre.1; zcash_keys::keys	zu, tu, uvf, uvi; zcash_keys encodes Revision 0 when representable and Revision 2 otherwise
-Addresses, keys, viewing keys	32		zcash_keys::keys	shielded HD key derivation
-Addresses, keys, viewing keys	320		zcash_address	TEX addresses: funds only from transparent sources
-Addresses, keys, viewing keys	173		zcash_address	Bech32
-Payment requests, PCZT	321		zip321 (components/zip321)	payment request URIs
-Payment requests, PCZT	374	R0	pczt	per-revision; only Revision 0 exists today
-Network upgrades	200		zcash_protocol::consensus	the upgrade mechanism
-Network upgrades	252		zcash_protocol::consensus	NU5
-Network upgrades	253		zcash_protocol::consensus	NU6
-Network upgrades	255		zcash_protocol::consensus	NU6.1
-Network upgrades	256		zcash_protocol::consensus	consensus bug fixes between NU6.1 and NU6.2; no activation height of its own
-Network upgrades	257		zcash_protocol::consensus	NU6.2
-Network upgrades	258		zcash_protocol::consensus	NU6.3: Draft and active on both networks
-Network upgrades	259		zcash_protocol::consensus	NU7: testnet 4465026, mainnet pending
-Issuance, funding streams, NSM	207	R1	zcash_protocol; zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	the Canopy and NU6 streams
-Issuance, funding streams, NSM	207	R2	none yet: zebra at v6.3.0-247 (2026-09-16) has no NU7 streams; the surface is zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	NU7
-Issuance, funding streams, NSM	214	R1	zebra-consensus block/subsidy	the Canopy and NU6 rules
-Issuance, funding streams, NSM	214	R2	zebra-chain parameters/network/subsidy/ (constants/mainnet.rs), POST_NU6_1_FUNDING_STREAMS; zebra-consensus block/subsidy	the NU6.1 streams of ZIP 1016: Proposed while NU6.1 is active on mainnet since 3146400
-Issuance, funding streams, NSM	214	R3	none yet: zebra at v6.3.0-247 (2026-09-16) has no NU7 rules; the surface is zebra-consensus block/subsidy	NU7
-Issuance, funding streams, NSM	1015		zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	block subsidy allocation for non-direct development funding
-Issuance, funding streams, NSM	2001		zebra-chain parameters/network/subsidy/ (constants/mainnet.rs), NU6 lockbox	lockbox funding streams
-Issuance, funding streams, NSM	233		none: zebra at v6.3.0-247 (2026-09-16) does not implement it, and ZIP 233 was dropped from the v6 format (zebra-rpc methods/types/transaction.rs)	NSM: removing funds from circulation
-Issuance, funding streams, NSM	234		none: zebra at v6.3.0-247 (2026-09-16) does not implement it	NSM: issuance smoothing
-Issuance, funding streams, NSM	235		none: zebra at v6.3.0-247 (2026-09-16) does not implement it	NSM: planned for NU7 per the checkout's README.rst
-Issuance, funding streams, NSM	237		none: zebra at v6.3.0-247 (2026-09-16) does not implement it	NSM: planned for NU7 per the checkout's README.rst
-Issuance, funding streams, NSM	2008		none yet: zebra at v6.3.0-247 (2026-09-16) still carries the previous FS_FPF_ZCG_H3 address in zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	FS_FPF_ZCG_H3 address list; planned for NU7 per the checkout's README.rst
-Shielded protocols	224		orchard	Orchard
-Shielded protocols	212		sapling-crypto	ephemeral secret derived from the note plaintext
-Shielded protocols	213		zebra-consensus; sapling-crypto, orchard	shielded coinbase
-Shielded protocols	216		sapling-crypto	canonical Jubjub point encodings
+surface	zip	revision	deploys_with	where	caveat
+Compact blocks and the light-client protocol	307			zcash_client_backend::{proto, scanning}; lightwallet-protocol walletrpc/compact_formats.proto	Draft and deployed: the protocol every light wallet speaks today
+Compact blocks and the light-client protocol	225			zcash_primitives::transaction	v5 transaction format
+Compact blocks and the light-client protocol	229		NU6.3	zcash_primitives::transaction	Draft and live: the v6 format NU6.3 introduced
+Compact blocks and the light-client protocol	244			zcash_primitives::transaction::txid	txid and auth digests; v6 extends the digest tree
+Compact blocks and the light-client protocol	224			zcash_client_backend::proto (CompactOrchardAction conversions); lightwallet-protocol walletrpc/compact_formats.proto	Orchard actions in compact form
+Compact blocks and the light-client protocol	258		NU6.3	zcash_protocol::consensus	NU6.3 deployment: Draft, active on mainnet since 3428143
+Compact blocks and the light-client protocol	2005		NU6.3	zcash_client_backend::scanning (scanning/compact.rs)	Ironwood pool; recoverable notes carry lead byte 0x03
+Compact blocks and the light-client protocol	221			zcash_history; zebra-chain history_tree.rs, primitives/zcash_history.rs, block/commitment.rs	FlyClient commitments in the block header
+Compact blocks and the light-client protocol	209			zebra-chain value_balance.rs	chain value pool balances
+Transaction parsing and txids	225			zcash_primitives::transaction	v5 format
+Transaction parsing and txids	229		NU6.3	zcash_primitives::transaction	Draft and live: v6, ungated in the crate
+Transaction parsing and txids	244			zcash_primitives::transaction::txid	non-malleable txids; the crate computes the v6 extension
+Transaction parsing and txids	2003		NU7	zcash_primitives::transaction	planned for NU7: the version number MUST be 5 or 6 from NU7 onward
+Fees, input selection, dust	317	R0		zcash_primitives::transaction::fees::zip317; zcash_client_backend::fees::zip317	the fee rule in force; marginal fee 5000 in the crate
+Fees, input selection, dust	317	R1	NU6.3	zcash_client_backend::fees	adds Ironwood-pool actions to logical_actions (NU6.3)
+Fees, input selection, dust	317	R2		zcash_client_backend::fees	adds fee handling for memo bundles (ZIP 231)
+Fees, input selection, dust	2009			zcash_primitives::transaction::fees::zip317	wallets SHOULD adopt marginal_fee 1000 at mainnet 3590000; the crate still carries 5000
+Fees, input selection, dust	315			zcash_client_backend::data_api::wallet::input_selection (SpendPolicy, GreedyInputSelector)	"Information leakage for transfers between pools": wallets MUST NOT automatically combine funds across pools to satisfy a transfer. librustzcash main (3c76c2d822, 2026-10-09) leaves it to the caller: the default SpendPolicy permits every pool and the selector may combine them; restrict SpendPolicy to one pool, or use DustAction::AddDustToFee, to stay in one pool
+Pool migration	318		NU6.3	zcash_pool_migration; zcash_protocol::zip318	Orchard to Ironwood migration, not a payments ZIP
+Addresses, keys, viewing keys	316	R0		zcash_address; zcash_keys::keys	what zcash_address 0.13.0 encodes (uview)
+Addresses, keys, viewing keys	316	R2		zcash_address 0.14.0-pre.1; zcash_keys::keys	zu, tu, uvf, uvi; zcash_keys encodes Revision 0 when representable and Revision 2 otherwise
+Addresses, keys, viewing keys	32			zcash_keys::keys	shielded HD key derivation
+Addresses, keys, viewing keys	320			zcash_address	TEX addresses: funds only from transparent sources
+Addresses, keys, viewing keys	173			zcash_address	Bech32
+Payment requests, PCZT	321			zip321 (components/zip321)	payment request URIs
+Payment requests, PCZT	374	R0		pczt	per-revision; only Revision 0 exists today
+Network upgrades	200			zcash_protocol::consensus	the upgrade mechanism
+Network upgrades	252		NU5	zcash_protocol::consensus	NU5
+Network upgrades	253		NU6	zcash_protocol::consensus	NU6
+Network upgrades	255		NU6.1	zcash_protocol::consensus	NU6.1
+Network upgrades	256			zcash_protocol::consensus	consensus bug fixes between NU6.1 and NU6.2; no activation height of its own
+Network upgrades	257		NU6.2	zcash_protocol::consensus	NU6.2
+Network upgrades	258		NU6.3	zcash_protocol::consensus	NU6.3: Draft and active on both networks
+Network upgrades	259		NU7	zcash_protocol::consensus	NU7: testnet 4465026, mainnet pending
+Issuance, funding streams, NSM	207	R1	NU6	zcash_protocol; zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	the Canopy and NU6 streams
+Issuance, funding streams, NSM	207	R2	NU7	none yet: zebra at v6.3.0-247 (2026-09-16) has no NU7 streams; the surface is zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	NU7
+Issuance, funding streams, NSM	214	R1	NU6	zebra-consensus block/subsidy	the Canopy and NU6 rules
+Issuance, funding streams, NSM	214	R2	NU6.1	zebra-chain parameters/network/subsidy/ (constants/mainnet.rs), POST_NU6_1_FUNDING_STREAMS; zebra-consensus block/subsidy	the NU6.1 streams of ZIP 1016: Proposed while NU6.1 is active on mainnet since 3146400
+Issuance, funding streams, NSM	214	R3	NU7	none yet: zebra at v6.3.0-247 (2026-09-16) has no NU7 rules; the surface is zebra-consensus block/subsidy	NU7
+Issuance, funding streams, NSM	1015			zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	block subsidy allocation for non-direct development funding
+Issuance, funding streams, NSM	2001			zebra-chain parameters/network/subsidy/ (constants/mainnet.rs), NU6 lockbox	lockbox funding streams
+Issuance, funding streams, NSM	233			none: zebra at v6.3.0-247 (2026-09-16) does not implement it, and ZIP 233 was dropped from the v6 format (zebra-rpc methods/types/transaction.rs)	NSM: removing funds from circulation
+Issuance, funding streams, NSM	234			none: zebra at v6.3.0-247 (2026-09-16) does not implement it	NSM: issuance smoothing
+Issuance, funding streams, NSM	235		NU7	none: zebra at v6.3.0-247 (2026-09-16) does not implement it	NSM: planned for NU7 per the checkout's README.rst
+Issuance, funding streams, NSM	237		NU7	none: zebra at v6.3.0-247 (2026-09-16) does not implement it	NSM: planned for NU7 per the checkout's README.rst
+Issuance, funding streams, NSM	2008		NU7	none yet: zebra at v6.3.0-247 (2026-09-16) still carries the previous FS_FPF_ZCG_H3 address in zebra-chain parameters/network/subsidy/ (constants/mainnet.rs)	FS_FPF_ZCG_H3 address list; planned for NU7 per the checkout's README.rst
+Shielded protocols	224			orchard	Orchard
+Shielded protocols	212			sapling-crypto	ephemeral secret derived from the note plaintext
+Shielded protocols	213			zebra-consensus; sapling-crypto, orchard	shielded coinbase
+Shielded protocols	216			sapling-crypto	canonical Jubjub point encodings

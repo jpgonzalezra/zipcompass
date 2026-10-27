@@ -385,19 +385,56 @@ def deployments(zips_dir, index):
     return rows
 
 
-def render_by_area(rows, index):
+def by_area(index, deployment_rows):
+    """The rows of by-area.tsv with the status of what each cites and, for a
+    row that names the upgrade it deploys with, that upgrade's mainnet height.
+    A row is a trap when its status is still Draft or Proposed and the upgrade
+    has a mainnet height."""
     source = REFERENCES / "by-area.tsv"
-    lines = ["Rendered from by-area.tsv by scripts/index.py. Do not edit.", ""]
-    surfaces = {}
-    for row in read_tsv(source, ("surface", "zip", "revision", "where", "caveat")):
+    mainnet = {row["upgrade"]: row["height"] for row in deployment_rows if row["network"] == "mainnet"}
+    upgrades = {row["upgrade"] for row in deployment_rows}
+    rows = read_tsv(source, ("surface", "zip", "revision", "deploys_with", "where", "caveat"))
+    seen = set()
+    for row in rows:
+        key = (row["surface"], row["zip"], row["revision"])
+        if key in seen:
+            fail(f"{source}: two rows for ZIP {row['zip']}{' ' + row['revision'] if row['revision'] else ''} under '{row['surface']}'")
+        seen.add(key)
         row["status"] = row_status(row, index, source)
+        upgrade = row["deploys_with"]
+        row["mainnet"] = None
+        if upgrade:
+            if upgrade not in upgrades:
+                fail(f"{source}: ZIP {row['zip']} deploys with {upgrade}, which deployments.tsv does not list")
+            if upgrade not in mainnet:
+                fail(f"{source}: ZIP {row['zip']} deploys with {upgrade}, which has no mainnet row in deployments.tsv")
+            row["mainnet"] = mainnet[upgrade]
+        row["trap"] = row["mainnet"] not in (None, "pending") and row["status"] in ("Draft", "Proposed")
+    return rows
+
+
+def deployment_cell(row):
+    upgrade, height = row["deploys_with"], row["mainnet"]
+    if not upgrade:
+        return ""
+    if height == "pending":
+        return f"{upgrade}, mainnet height pending"
+    if row["trap"]:
+        return f"{row['status']}, and {upgrade} activates on mainnet at {height}"
+    return f"{upgrade} activates on mainnet at {height}"
+
+
+def render_by_area(rows, index):
+    lines = ["Rendered from by-area.tsv by scripts/index.py, with the statuses of the index and the heights of deployments.md. Do not edit.", ""]
+    surfaces = {}
+    for row in rows:
         surfaces.setdefault(row["surface"], []).append(row)
     for surface, surface_rows in surfaces.items():
         lines += [f"## {surface}", ""]
         lines += table(
-            ("ZIP", "Title", "Revision", "Status", "Where", "Caveat"),
+            ("ZIP", "Title", "Revision", "Status", "Deployment", "Where", "Caveat"),
             [
-                (row["zip"], index[row["zip"]]["title"], row["revision"], row["status"], row["where"], row["caveat"])
+                (row["zip"], index[row["zip"]]["title"], row["revision"], row["status"], deployment_cell(row), row["where"], row["caveat"])
                 for row in surface_rows
             ],
         )
@@ -472,10 +509,12 @@ def main():
     date = git(zips_dir, "log", "-1", "--format=%cs", "HEAD")
     rows = entries(zips_dir)
     index = {row["zip"]: row for row in rows}
+    deployment_rows = deployments(zips_dir, index)
+    area_rows = by_area(index, deployment_rows)
     outputs = {
         REFERENCES / "index.md": render_index(rows, commit, date),
-        REFERENCES / "by-area.md": render_by_area(rows, index),
-        REFERENCES / "deployments.md": render_deployments(deployments(zips_dir, index), index),
+        REFERENCES / "by-area.md": render_by_area(area_rows, index),
+        REFERENCES / "deployments.md": render_deployments(deployment_rows, index),
         REFERENCES / "spec-anchors.md": render_spec_anchors(headings, commit, date),
     }
     if check:
