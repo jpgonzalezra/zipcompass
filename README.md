@@ -19,7 +19,7 @@ Protocol specification, "Transaction Consensus Rules" (#txnconsensus), protocol.
 
 ## What it covers
 
-`references/by-area.md` maps nine implementation surfaces to their ZIPs, one trap per row:
+`references/by-area.md` maps nine implementation surfaces to their ZIPs, one caveat per row:
 compact blocks and the light-client protocol; transaction parsing and txids; fees, input
 selection and dust; pool migration; addresses, keys and viewing keys; payment requests and
 PCZT; network upgrades; issuance, funding streams and NSM; the shielded protocols.
@@ -28,9 +28,11 @@ PCZT; network upgrades; issuance, funding streams and NSM; the shielded protocol
 consensus rules; transaction encoding; transaction identifiers; the block header; Spend,
 Output and Action encodings; funding streams and subsidies; key components; address
 encodings; networks; note commitment trees. `references/deployments.md` is the activation
-ladder of both networks, and `references/index.md` lists every ZIP and draft with its
-status. The index's first line names the `zcash/zips` commit it was generated from, with
-that commit's date.
+ladder of both networks. `references/facts.md` is generated from the checkout and names the
+upgrade the published `protocol.pdf` is built for and the rows of `by-area.md` still Draft or
+Proposed at a mainnet height. `references/index.md` lists every ZIP and draft with its status. The
+index's first line names the `zcash/zips` commit it was generated from, with that commit's
+date.
 
 ## Install
 
@@ -63,11 +65,13 @@ the directory your agent reads skills from.
 The targets below run from a clone of this repository and need `git`, `bash`, `make` and
 `python3` (standard library only). `ZIPS_DIR` names the checkout, `../zips` by default.
 
-- `make index` regenerates `references/index.md` from the checkout and renders the
-  hand-written tables next to it.
-- `make check` verifies the tables and the skill text against the index and the checkout:
-  every status and activation height the tables claim, every anchor they name, and that the
-  index comes from the commit the checkout is at. It fails when they disagree.
+- `make index` regenerates `references/index.md` and `references/facts.md` from the
+  checkout and renders the hand-written tables next to them. The tables name ZIPs, revisions
+  and upgrades. Statuses and activation heights are read from the ZIPs at render time, never
+  copied by hand, so an upstream promotion changes the rendering and leaves the tables alone.
+- `make check` verifies the tables and the skill text against the checkout and fails when
+  they disagree. It checks every ZIP and anchor they name, whether the generated files are
+  current, and whether the index comes from the commit the checkout is at.
 - `make update` fetches `zcash/zips`, fast-forwards the checkout and, when the index is
   behind it, rebuilds the index on the `update` branch and writes a report of what changed
   under `reports/`. It skips when this repository has uncommitted changes or the checkout
@@ -84,7 +88,7 @@ the lock taken skips.
 
 - `skills/zips/SKILL.md`: the skill.
 - `skills/zips/references/`: `by-area.tsv`, `deployments.tsv` and `spec-anchors.tsv` are
-  hand-written; their `.md` renderings and `index.md` are generated.
+  hand-written. Their `.md` renderings, `index.md` and `facts.md` are generated.
 - `scripts/`: `index.py` generates, `check.sh` verifies, `update.sh` and `publish.sh` run
   the update, and `protocol-changes.sh` summarizes what moved under `protocol/` for the
   report.
