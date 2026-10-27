@@ -38,6 +38,12 @@ REVISION_NUMBER = re.compile(r"\bRevision ([0-9]+)\b")
 ACTIVATION = re.compile(r"^ACTIVATION_HEIGHT \((.+)\)\s*$")
 NETWORK_HEIGHT = re.compile(r"^[:\s]*(Mainnet|Testnet)\b[^:]*:\s*(.*?)\s*$")
 NETWORKS = ("mainnet", "testnet")
+PDF_BUILD = re.compile(r"^\s*mv -f aux/(nu[0-9_]+)\.pdf \$\(PDFDIR\)/protocol\.pdf$")
+PDF_LINKS = (
+    re.compile(r"\[(NU[0-9.]+)[^\]]*\][^)]*\]\(protocol/protocol\.pdf[#)]"),
+    re.compile(r"\[(NU[0-9.]+)[^\]]*\][^<>`]*<protocol/protocol\.pdf[#>]"),
+)
+TAG_PATTERN = "v20*"
 
 
 def fail(message):
@@ -489,6 +495,82 @@ def render_deployments(rows, index):
     return "\n".join(lines) + "\n"
 
 
+def pdf_build(zips_dir):
+    """The upgrade whose build protocol/Makefile moves to protocol.pdf."""
+    path = zips_dir / "protocol" / "Makefile"
+    builds = [match.group(1) for line in path.read_text(encoding="utf-8").splitlines() if (match := PDF_BUILD.match(line))]
+    if len(builds) != 1:
+        fail(f"{path}: expected one 'mv -f aux/nu*.pdf $(PDFDIR)/protocol.pdf' line, found {len(builds)}")
+    return builds[0], "NU" + builds[0][2:].replace("_", ".")
+
+
+def latest_tag(zips_dir):
+    try:
+        return git(zips_dir, "describe", "--tags", "--abbrev=0", "--match", TAG_PATTERN, "HEAD")
+    except subprocess.CalledProcessError:
+        fail(f"the zips checkout has no {TAG_PATTERN} tag reachable from HEAD; run git fetch --tags")
+
+
+def later_pdf_links(zips_dir, rows, build_upgrade, order):
+    """The numbered ZIPs that link protocol.pdf under an upgrade label later
+    than the build, with those labels. A label deployments.tsv does not list
+    is an upgrade newer than all it lists."""
+    built = order.index(build_upgrade)
+    found = []
+    for row in rows:
+        if row["draft"]:
+            continue
+        text = (zips_dir / row["file"]).read_text(encoding="utf-8")
+        labels = {match.group(1) for pattern in PDF_LINKS for match in pattern.finditer(text)}
+        later = sorted(label for label in labels if label not in order or order.index(label) > built)
+        if later:
+            found.append((row, later))
+    return found
+
+
+def render_facts(zips_dir, rows, deployment_rows, area_rows, commit, date):
+    order = list(dict.fromkeys(row["upgrade"] for row in deployment_rows))
+    target, build_upgrade = pdf_build(zips_dir)
+    if build_upgrade not in order:
+        fail(f"protocol/Makefile builds protocol.pdf from {target}, an upgrade deployments.tsv does not list")
+    lines = [
+        f"Derived from zcash/zips at {commit} ({date}) by scripts/index.py. Do not edit.",
+        "",
+        "## The protocol specification",
+        "",
+    ]
+    lines += table(
+        ("Fact", "Value", "Source"),
+        [
+            ("The upgrade that `protocol.pdf` on zips.z.cash is built for", build_upgrade, f"protocol/Makefile, the `{target}` target"),
+            ("The latest tag of the specification", latest_tag(zips_dir), f"`git describe --tags --match '{TAG_PATTERN}'`"),
+        ],
+    )
+    lines += [
+        "",
+        "## ZIPs that link protocol.pdf for a later upgrade",
+        "",
+        f"`protocol.pdf` is the {build_upgrade} build, so the text these ZIPs expect under a later upgrade's macro is not in it. Read `protocol/protocol.tex` at the anchor instead.",
+        "",
+    ]
+    lines += table(
+        ("ZIP", "Title", "Upgrade in the link", "File"),
+        [(row["zip"], row["title"], ", ".join(labels), row["file"]) for row, labels in later_pdf_links(zips_dir, rows, build_upgrade, order)],
+    )
+    traps = dict.fromkeys(
+        (row["zip"], row["revision"], row["status"], row["deploys_with"], row["mainnet"]) for row in area_rows if row["trap"]
+    )
+    lines += [
+        "",
+        "## Traps",
+        "",
+        "ZIPs and revisions in by-area.md still Draft or Proposed although the upgrade they deploy with has a mainnet activation height. Status says where a ZIP is in the ZIP process, not whether it is in force.",
+        "",
+    ]
+    lines += table(("ZIP", "Revision", "Status", "Upgrade", "Mainnet height"), list(traps))
+    return "\n".join(lines) + "\n"
+
+
 def main():
     args = sys.argv[1:]
     check = "--check" in args
@@ -499,8 +581,9 @@ def main():
     zips_dir = Path(args[0]).resolve()
     if not (zips_dir / "zips").is_dir():
         fail(f"{zips_dir} has no zips/ folder")
-    if not (zips_dir / "protocol" / "protocol.tex").is_file():
-        fail(f"{zips_dir} has no protocol/protocol.tex")
+    for name in ("protocol.tex", "Makefile"):
+        if not (zips_dir / "protocol" / name).is_file():
+            fail(f"{zips_dir} has no protocol/{name}")
     headings = protocol_headings(zips_dir)
     if list_anchors:
         print("\n".join(anchors(headings)))
@@ -515,6 +598,7 @@ def main():
         REFERENCES / "index.md": render_index(rows, commit, date),
         REFERENCES / "by-area.md": render_by_area(area_rows, index),
         REFERENCES / "deployments.md": render_deployments(deployment_rows, index),
+        REFERENCES / "facts.md": render_facts(zips_dir, rows, deployment_rows, area_rows, commit, date),
         REFERENCES / "spec-anchors.md": render_spec_anchors(headings, commit, date),
     }
     if check:
