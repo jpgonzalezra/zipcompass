@@ -14,18 +14,21 @@ section.
 
 `Status` says where a ZIP is in the ZIP process, nothing more. What is live comes from the
 deployment ZIP of the upgrade and from the node (`getblockchaininfo`, `consensus.nextblock`),
-which outranks the crate. ZIP 258, the deployment ZIP of NU6.3, is Draft while NU6.3 has
-been active on mainnet since 3,428,143. ZIP 229 (v6 transactions) and ZIP 307 (light-client
-protocol) are Draft and live. ZIP 2005 is Proposed and live. The ladder is in
-`references/deployments.md`: NU5 through NU6.3 on both networks, NU7 with its testnet height
-and mainnet pending. ZIP 256 (consensus bug fixes between NU6.1 and NU6.2) has no activation
-height of its own.
+which outranks the crate. A ZIP can stay Draft or Proposed long after the upgrade that
+carries it has a mainnet height. The Deployment column of `references/by-area.md` names the
+upgrade each row ships with and the mainnet height its deployment ZIP sets.
+`references/facts.md` lists the rows still Draft or Proposed at such a height. ZIP 307
+(light-client protocol) ships through software rather than an upgrade, so no height applies
+to it. ZIP 256 (consensus bug fixes between NU6.1 and NU6.2) has no activation height of its
+own. The ladder is in `references/deployments.md`, with the heights the ZIPs set. Whether the
+chain has reached them is the node's to say.
 
 ## One status per revision
 
-ZIPs 207, 214, 316, 317 and 374 carry one status per revision. ZIP 317 reads "[Revision 0]
-Active, [Revision 1: NU6.3] Draft, [Revision 2] Draft". A citation of one of these names the
-revision, and the rows for them in `references/by-area.md` carry it.
+ZIPs 207, 214, 316, 317 and 374 carry one status per revision. Their `Status` field lists
+each revision in brackets with its own status, as in "[Revision 0] Active, [Revision 1:
+NU6.3] Draft", and `references/index.md` copies it as written. A citation of one of these
+ZIPs names the revision, and their rows in `references/by-area.md` carry it.
 
 ## Who decides what
 
@@ -39,7 +42,7 @@ revision, and the rows for them in `references/by-area.md` carry it.
 | An RPC contract: field, type, error behavior | zebra's source at the tag the node runs |
 
 When two sources disagree and both are right in their own terms, say both, with versions.
-Standing example: ZIP 316 Revision 2 (Draft) defines `zu`, `tu`, `uvf` and `uvi`.
+Standing example: ZIP 316 Revision 2 defines `zu`, `tu`, `uvf` and `uvi`.
 `zcash_address 0.13.0` (2026-07-09, the last release before the 0.14.0 pre-releases)
 encodes Revision 0 only (`uview`). `zcash_address 0.14.0-pre.1` on librustzcash `main`
 encodes both, and `zcash_keys` picks Revision 0 when the key is representable there and
@@ -52,17 +55,18 @@ For consensus rules the contract is the Zcash Protocol Specification, `protocol/
 in the same checkout: one LaTeX source, built once per network upgrade. Three things to know
 before citing it.
 
-`protocol.pdf` on zips.z.cash is the NU6.2 build (`protocol/Makefile`, the `nu6_2` target),
-while NU6.3 is active on both networks. Text the source wraps in `\nusixthree{...}`,
-`\nusixthreeonwarditem{...}` or `\notbeforenusixthree{...}` is absent from it and present in
-`nu6_3.pdf`. Text that only carries `\setnusixthree` (a colour) prints in both builds: the
-Ironwood rows of the transaction field table are one case. So Ironwood text in `protocol.pdf`
-does not mean the NU6.3 rules are there.
+`protocol.pdf` on zips.z.cash is one build of that source, for the upgrade
+`references/facts.md` names. Text wrapped in a later upgrade's macro is absent from that
+build and present in the later upgrade's own. For NU6.3 the macros are `\nusixthree{...}`,
+`\nusixthreeonwarditem{...}` and `\notbeforenusixthree{...}`, and the build is `nu6_3.pdf`.
+Text that only carries a colour such as `\setnusixthree` prints in every build: the Ironwood
+rows of the transaction field table are one case. So text about a later upgrade in
+`protocol.pdf` does not mean its rules are in that build.
 
-ZIPs 229, 235, 237, 258, 259 and 326 link `protocol.pdf` for the NU6.3 specification, and
-the latest tag of the specification is `v2026.7.0`. Read the source at the label, not a
-PDF: `grep -n '{txnconsensus}' protocol/protocol.tex` finds the heading, and the macro
-around a sentence says which upgrade it belongs to.
+Several ZIPs link `protocol.pdf` for the rules of an upgrade later than the one it is built
+for. `facts.md` lists them, along with the latest tag of the specification. Read the source
+at the label, not a PDF: `grep -n '{txnconsensus}' protocol/protocol.tex` finds the heading,
+and the macro around a sentence says which upgrade it belongs to.
 
 Cite by anchor, never by section number: `Protocol specification, "Transaction Consensus
 Rules" (#txnconsensus), protocol.tex line <n>, zips@<short commit>` plus the quoted sentence
@@ -71,7 +75,7 @@ rebuilds. The section number does not. The version a ZIP names in its own citati
 of the day it was written.
 
 `references/spec-anchors.md` maps implementation surfaces to the anchors to open, with one
-trap per row.
+caveat per row.
 
 ## How to cite
 
@@ -90,7 +94,12 @@ to one directory (codex with `--cd`, say) never sees a skill installed outside i
 
 - `references/index.md`: every ZIP and draft with its status, category, creation date, last
   change and file, generated from the checkout at the commit in its first line.
-- `references/by-area.md`: the ZIPs each implementation surface rests on, one trap per row.
-- `references/deployments.md`: the activation ladder on both networks.
+- `references/by-area.md`: the ZIPs each implementation surface rests on, with each ZIP's
+  status and the upgrade it deploys with, and one caveat per row.
+- `references/deployments.md`: the activation ladder on both networks, with the heights the
+  deployment ZIPs set.
+- `references/facts.md`: generated from the checkout. It names the upgrade `protocol.pdf` is
+  built for, the specification's latest tag, the ZIPs that link `protocol.pdf` for a later
+  upgrade, and the rows of `by-area.md` still Draft or Proposed at a mainnet height.
 - `references/spec-anchors.md`: the anchors of the protocol specification each implementation
-  surface rests on, with the heading's line at the index's commit and one trap per row.
+  surface rests on, with the heading's line at the index's commit and one caveat per row.

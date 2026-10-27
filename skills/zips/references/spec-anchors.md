@@ -4,7 +4,7 @@ Rendered from spec-anchors.tsv by scripts/index.py, with the titles and lines of
 
 | Anchor | Title | Level | Line | Where | Caveat |
 |---|---|---|---|---|---|
-| txnconsensus | Transaction Consensus Rules | subsubsection | 13620 | zebra-chain src/transaction.rs, zebra-consensus src/transaction/check.rs, zebra-state src/service/check/utxo.rs; zcash_protocol src/consensus.rs, zcash_primitives src/transaction/builder.rs, zcash_transparent src/bundle.rs | the v6 and Ironwood rules are `\nusixthreeonwarditem` and `\nusixthree` text, absent from protocol.pdf |
+| txnconsensus | Transaction Consensus Rules | subsubsection | 13620 | zebra-chain src/transaction.rs, zebra-consensus src/transaction/check.rs, zebra-state src/service/check/utxo.rs; zcash_protocol src/consensus.rs, zcash_primitives src/transaction/builder.rs, zcash_transparent src/bundle.rs | the v6 and Ironwood rules are `\nusixthreeonwarditem` and `\nusixthree` text, absent from protocol.pdf while it is built for an earlier upgrade (facts.md) |
 
 ## Transaction encoding
 

@@ -32,6 +32,18 @@ HEADING_LIKE = re.compile(r"\\l[a-z]*(?:section|part|paragraph)\{")
 EXTRALABEL = re.compile(r"\\extralabel\{([^{}]*)\}\{")
 POOL_NAME = re.compile(r"\\(Sprout|Sapling|Orchard)Text(?:\{\})?")
 ANCHOR = re.compile(r"^[A-Za-z0-9]+$")
+REVISION = re.compile(r"^R[0-9]+$")
+REVISION_GROUP = re.compile(r"\[([^\]]*)\] ([A-Za-z]+)")
+REVISION_NUMBER = re.compile(r"\bRevision ([0-9]+)\b")
+ACTIVATION = re.compile(r"^ACTIVATION_HEIGHT \((.+)\)\s*$")
+NETWORK_HEIGHT = re.compile(r"^[:\s]*(Mainnet|Testnet)\b[^:]*:\s*(.*?)\s*$")
+NETWORKS = ("mainnet", "testnet")
+PDF_BUILD = re.compile(r"^\s*mv -f aux/(nu[0-9_]+)\.pdf \$\(PDFDIR\)/protocol\.pdf$")
+PDF_LINKS = (
+    re.compile(r"\[(NU[0-9.]+)[^\]]*\][^)]*\]\(protocol/protocol\.pdf[#)]"),
+    re.compile(r"\[(NU[0-9.]+)[^\]]*\][^<>`]*<protocol/protocol\.pdf[#>]"),
+)
+TAG_PATTERN = "v20*"
 
 
 def fail(message):
@@ -297,20 +309,138 @@ def read_tsv(path, columns):
     return rows
 
 
-def render_by_area(rows, index):
-    source = REFERENCES / "by-area.tsv"
-    lines = ["Rendered from by-area.tsv by scripts/index.py. Do not edit.", ""]
-    surfaces = {}
-    for row in read_tsv(source, ("surface", "zip", "revision", "status", "where", "caveat")):
+def revision_statuses(status):
+    """'[Revision 0: Canopy, Revision 1: NU6] Final, [Revision 2: NU7] Draft'
+    -> {'R0': 'Final', 'R1': 'Final', 'R2': 'Draft'}"""
+    statuses = {}
+    for revisions, word in REVISION_GROUP.findall(status):
+        for number in REVISION_NUMBER.findall(revisions):
+            statuses[f"R{number}"] = word
+    return statuses
+
+
+def row_status(row, index, source):
+    """The status of the ZIP a row cites, of the row's revision when the ZIP
+    has one status per revision."""
+    zip_number, revision = row["zip"], row["revision"]
+    if zip_number not in index:
+        fail(f"{source}: ZIP {zip_number} is not in the index")
+    if revision and not REVISION.match(revision):
+        fail(f"{source}: ZIP {zip_number} has the revision {revision!r}, expected R<n>")
+    status = index[zip_number]["status"]
+    if not status.startswith("[Revision"):
+        if revision:
+            fail(f"{source}: ZIP {zip_number} has one status, the row must not name a revision")
+        return status
+    if not revision:
+        fail(f"{source}: ZIP {zip_number} has one status per revision, the row needs one")
+    statuses = revision_statuses(status)
+    if revision not in statuses:
+        fail(f"{source}: ZIP {zip_number} has no Revision {revision[1:]} in the index")
+    return statuses[revision]
+
+
+def activation_heights(zips_dir, entry, upgrade):
+    """The heights under the ZIP's 'ACTIVATION_HEIGHT (<upgrade>)' line, by
+    network. The block closes at the next line that starts at column 0 with
+    neither a space nor ':', which keeps the protocol version numbers out. A
+    value is a number or starts with 'TBD', which is pending; anything else
+    fails, so a height upstream reformats is noticed rather than read as
+    pending."""
+    path = zips_dir / entry["file"]
+    lines = path.read_text(encoding="utf-8").splitlines()
+    starts = [number for number, line in enumerate(lines) if (match := ACTIVATION.match(line)) and match.group(1) == upgrade]
+    if len(starts) != 1:
+        fail(f"{path}: expected one 'ACTIVATION_HEIGHT ({upgrade})' line, found {len(starts)}")
+    heights = {}
+    for line in lines[starts[0] + 1:]:
+        if line and line[0] not in " :":
+            break
+        match = NETWORK_HEIGHT.match(line)
+        if not match:
+            continue
+        network, value = match.group(1).lower(), match.group(2)
+        if network in heights:
+            fail(f"{path}: two {match.group(1)} values under ACTIVATION_HEIGHT ({upgrade})")
+        if not value.isdigit() and not value.startswith("TBD"):
+            fail(f"{path}: the {match.group(1)} height of {upgrade} is {value!r}, expected a number or TBD")
+        heights[network] = value if value.isdigit() else "pending"
+    return heights
+
+
+def deployments(zips_dir, index):
+    """The rows of deployments.tsv in order, each with its height from the ZIP."""
+    source = REFERENCES / "deployments.tsv"
+    rows = read_tsv(source, ("upgrade", "zip", "network"))
+    blocks = {}
+    seen = set()
+    for row in rows:
         if row["zip"] not in index:
             fail(f"{source}: ZIP {row['zip']} is not in the index")
+        if row["network"] not in NETWORKS:
+            fail(f"{source}: unknown network {row['network']!r}, expected one of {', '.join(NETWORKS)}")
+        if (row["upgrade"], row["network"]) in seen:
+            fail(f"{source}: two rows for {row['upgrade']} {row['network']}")
+        seen.add((row["upgrade"], row["network"]))
+        key = (row["zip"], row["upgrade"])
+        if key not in blocks:
+            blocks[key] = activation_heights(zips_dir, index[row["zip"]], row["upgrade"])
+        if row["network"] not in blocks[key]:
+            fail(f"{index[row['zip']]['file']}: no {row['network'].capitalize()} line under ACTIVATION_HEIGHT ({row['upgrade']})")
+        row["height"] = blocks[key][row["network"]]
+    return rows
+
+
+def by_area(index, deployment_rows):
+    """The rows of by-area.tsv with the status of what each cites and, for a
+    row that names the upgrade it deploys with, that upgrade's mainnet height.
+    A row is a trap when its status is still Draft or Proposed and the upgrade
+    has a mainnet height."""
+    source = REFERENCES / "by-area.tsv"
+    mainnet = {row["upgrade"]: row["height"] for row in deployment_rows if row["network"] == "mainnet"}
+    upgrades = {row["upgrade"] for row in deployment_rows}
+    rows = read_tsv(source, ("surface", "zip", "revision", "deploys_with", "where", "caveat"))
+    seen = set()
+    for row in rows:
+        key = (row["surface"], row["zip"], row["revision"])
+        if key in seen:
+            fail(f"{source}: two rows for ZIP {row['zip']}{' ' + row['revision'] if row['revision'] else ''} under '{row['surface']}'")
+        seen.add(key)
+        row["status"] = row_status(row, index, source)
+        upgrade = row["deploys_with"]
+        row["mainnet"] = None
+        if upgrade:
+            if upgrade not in upgrades:
+                fail(f"{source}: ZIP {row['zip']} deploys with {upgrade}, which deployments.tsv does not list")
+            if upgrade not in mainnet:
+                fail(f"{source}: ZIP {row['zip']} deploys with {upgrade}, which has no mainnet row in deployments.tsv")
+            row["mainnet"] = mainnet[upgrade]
+        row["trap"] = row["mainnet"] not in (None, "pending") and row["status"] in ("Draft", "Proposed")
+    return rows
+
+
+def deployment_cell(row):
+    upgrade, height = row["deploys_with"], row["mainnet"]
+    if not upgrade:
+        return ""
+    if height == "pending":
+        return f"{upgrade}, mainnet height pending"
+    if row["trap"]:
+        return f"{row['status']}, and {upgrade} activates on mainnet at {height}"
+    return f"{upgrade} activates on mainnet at {height}"
+
+
+def render_by_area(rows, index):
+    lines = ["Rendered from by-area.tsv by scripts/index.py, with the statuses of the index and the heights of deployments.md. Do not edit.", ""]
+    surfaces = {}
+    for row in rows:
         surfaces.setdefault(row["surface"], []).append(row)
     for surface, surface_rows in surfaces.items():
         lines += [f"## {surface}", ""]
         lines += table(
-            ("ZIP", "Title", "Revision", "Status", "Where", "Caveat"),
+            ("ZIP", "Title", "Revision", "Status", "Deployment", "Where", "Caveat"),
             [
-                (row["zip"], index[row["zip"]]["title"], row["revision"], row["status"], row["where"], row["caveat"])
+                (row["zip"], index[row["zip"]]["title"], row["revision"], row["status"], deployment_cell(row), row["where"], row["caveat"])
                 for row in surface_rows
             ],
         )
@@ -356,17 +486,88 @@ def render_spec_anchors(headings, commit, date):
     return "\n".join(lines)
 
 
-def render_deployments(index):
-    source = REFERENCES / "deployments.tsv"
-    lines = ["Rendered from deployments.tsv by scripts/index.py. Do not edit.", ""]
-    rows = read_tsv(source, ("upgrade", "zip", "network", "height"))
-    for row in rows:
-        if row["zip"] not in index:
-            fail(f"{source}: ZIP {row['zip']} is not in the index")
+def render_deployments(rows, index):
+    lines = ["Rendered from deployments.tsv by scripts/index.py, with the heights the ZIPs set. Do not edit.", ""]
     lines += table(
         ("Upgrade", "ZIP", "ZIP status", "Network", "Height"),
         [(row["upgrade"], row["zip"], index[row["zip"]]["status"], row["network"], row["height"]) for row in rows],
     )
+    return "\n".join(lines) + "\n"
+
+
+def pdf_build(zips_dir):
+    """The upgrade whose build protocol/Makefile moves to protocol.pdf."""
+    path = zips_dir / "protocol" / "Makefile"
+    builds = [match.group(1) for line in path.read_text(encoding="utf-8").splitlines() if (match := PDF_BUILD.match(line))]
+    if len(builds) != 1:
+        fail(f"{path}: expected one 'mv -f aux/nu*.pdf $(PDFDIR)/protocol.pdf' line, found {len(builds)}")
+    return builds[0], "NU" + builds[0][2:].replace("_", ".")
+
+
+def latest_tag(zips_dir):
+    try:
+        return git(zips_dir, "describe", "--tags", "--abbrev=0", "--match", TAG_PATTERN, "HEAD")
+    except subprocess.CalledProcessError:
+        fail(f"the zips checkout has no {TAG_PATTERN} tag reachable from HEAD; run git fetch --tags")
+
+
+def later_pdf_links(zips_dir, rows, build_upgrade, order):
+    """The numbered ZIPs that link protocol.pdf under an upgrade label later
+    than the build, with those labels. A label deployments.tsv does not list
+    is an upgrade newer than all it lists."""
+    built = order.index(build_upgrade)
+    found = []
+    for row in rows:
+        if row["draft"]:
+            continue
+        text = (zips_dir / row["file"]).read_text(encoding="utf-8")
+        labels = {match.group(1) for pattern in PDF_LINKS for match in pattern.finditer(text)}
+        later = sorted(label for label in labels if label not in order or order.index(label) > built)
+        if later:
+            found.append((row, later))
+    return found
+
+
+def render_facts(zips_dir, rows, deployment_rows, area_rows, commit, date):
+    order = list(dict.fromkeys(row["upgrade"] for row in deployment_rows))
+    target, build_upgrade = pdf_build(zips_dir)
+    if build_upgrade not in order:
+        fail(f"protocol/Makefile builds protocol.pdf from {target}, an upgrade deployments.tsv does not list")
+    lines = [
+        f"Derived from zcash/zips at {commit} ({date}) by scripts/index.py. Do not edit.",
+        "",
+        "## The protocol specification",
+        "",
+    ]
+    lines += table(
+        ("Fact", "Value", "Source"),
+        [
+            ("The upgrade that `protocol.pdf` on zips.z.cash is built for", build_upgrade, f"protocol/Makefile, the `{target}` target"),
+            ("The latest tag of the specification", latest_tag(zips_dir), f"`git describe --tags --match '{TAG_PATTERN}'`"),
+        ],
+    )
+    lines += [
+        "",
+        "## ZIPs that link protocol.pdf for a later upgrade",
+        "",
+        f"`protocol.pdf` is the {build_upgrade} build, so the text these ZIPs expect under a later upgrade's macro is not in it. Read `protocol/protocol.tex` at the anchor instead.",
+        "",
+    ]
+    lines += table(
+        ("ZIP", "Title", "Upgrade in the link", "File"),
+        [(row["zip"], row["title"], ", ".join(labels), row["file"]) for row, labels in later_pdf_links(zips_dir, rows, build_upgrade, order)],
+    )
+    traps = dict.fromkeys(
+        (row["zip"], row["revision"], row["status"], row["deploys_with"], row["mainnet"]) for row in area_rows if row["trap"]
+    )
+    lines += [
+        "",
+        "## Traps",
+        "",
+        "ZIPs and revisions in by-area.md still Draft or Proposed although the upgrade they deploy with has a mainnet activation height. Status says where a ZIP is in the ZIP process, not whether it is in force.",
+        "",
+    ]
+    lines += table(("ZIP", "Revision", "Status", "Upgrade", "Mainnet height"), list(traps))
     return "\n".join(lines) + "\n"
 
 
@@ -380,8 +581,9 @@ def main():
     zips_dir = Path(args[0]).resolve()
     if not (zips_dir / "zips").is_dir():
         fail(f"{zips_dir} has no zips/ folder")
-    if not (zips_dir / "protocol" / "protocol.tex").is_file():
-        fail(f"{zips_dir} has no protocol/protocol.tex")
+    for name in ("protocol.tex", "Makefile"):
+        if not (zips_dir / "protocol" / name).is_file():
+            fail(f"{zips_dir} has no protocol/{name}")
     headings = protocol_headings(zips_dir)
     if list_anchors:
         print("\n".join(anchors(headings)))
@@ -390,10 +592,13 @@ def main():
     date = git(zips_dir, "log", "-1", "--format=%cs", "HEAD")
     rows = entries(zips_dir)
     index = {row["zip"]: row for row in rows}
+    deployment_rows = deployments(zips_dir, index)
+    area_rows = by_area(index, deployment_rows)
     outputs = {
         REFERENCES / "index.md": render_index(rows, commit, date),
-        REFERENCES / "by-area.md": render_by_area(rows, index),
-        REFERENCES / "deployments.md": render_deployments(index),
+        REFERENCES / "by-area.md": render_by_area(area_rows, index),
+        REFERENCES / "deployments.md": render_deployments(deployment_rows, index),
+        REFERENCES / "facts.md": render_facts(zips_dir, rows, deployment_rows, area_rows, commit, date),
         REFERENCES / "spec-anchors.md": render_spec_anchors(headings, commit, date),
     }
     if check:

@@ -222,22 +222,35 @@ changed_zips() {
   }' "$changes" | LC_ALL=C sort -u
 }
 
+derived_section() {
+  local baseline_dir=$work/baseline name
+  mkdir -p "$baseline_dir"
+  for name in by-area.md deployments.md facts.md; do
+    git -C "$project" show "$baseline:$references/$name" > "$baseline_dir/$name" 2>/dev/null ||
+      rm -f "$baseline_dir/$name"
+  done
+  python3 -I "$project/scripts/derived-changes.py" "$baseline_dir" "$project/$references"
+  echo
+}
+
+# The rendered rows, so the status and deployment are the ones derived at the
+# new commit. Rendered cells never contain '|'.
 rows_section() {
-  local rows
-  rows=$(awk -F'\t' -v OFS=' | ' '
+  local rendered=$project/$references/by-area.md rows
+  rows=$(awk -F' \\| ' '
     NR == FNR { changed[$1] = 1; next }
-    FNR > 1 && NF && ($2 in changed) { gsub(/\|/, "\\|"); $1 = $1; print "| " $0 " |" }' \
-    <(changed_zips) "$project/$references/by-area.tsv")
+    /^## / { surface = substr($0, 4); next }
+    /^\| / && (substr($1, 3) in changed) { print "| " surface " | " substr($0, 3) }' \
+    <(changed_zips) "$rendered")
   echo "## Rows to look at"
   echo
   if [ -n "$rows" ]; then
-    echo 'Lines of `by-area.tsv` whose ZIP changed in this range. The statuses passed `check.sh`. Whether each caveat still holds is for a reader to check.'
+    echo 'Rows of `by-area.md` whose ZIP changed in this range, with the status and deployment derived at the new commit. Whether each caveat still holds is for a reader to check.'
     echo
-    echo "| Surface | ZIP | Revision | Status | Where | Caveat |"
-    echo "|---|---|---|---|---|---|"
+    awk '/^\| ZIP \|/ { print "| Surface " $0; getline; print "|---" $0; exit }' "$rendered"
     echo "$rows"
   else
-    echo 'No line of `by-area.tsv` cites a ZIP that changed.'
+    echo 'No row of `by-area.md` cites a ZIP that changed.'
   fi
 }
 
@@ -260,6 +273,7 @@ write_report() {
     file_section "Drafts" AMD yes
     file_section "Other changes" CTUX no
     transitions_section
+    derived_section
     rows_section
   } > "$project/$report"
 }
@@ -269,6 +283,7 @@ git -C "$project" checkout -q -B update "$baseline"
 python3 -I "$project/scripts/index.py" "$zips_dir" 2>&1 | tee -a "$build_log" || fail "index.py failed"
 write_report
 ZIPS_DIR=$zips_dir "$project/scripts/check.sh" 2>&1 | tee -a "$build_log" || fail "check.sh failed"
+printf '\n## Validation\n\n`check.sh` passed at zips@%s.\n' "${source_new:0:8}" >> "$project/$report"
 git -C "$project" add "$references" "$report"
 git -C "$project" -c commit.gpgsign=false commit -q -m "chore: update the ZIP index to zips@${source_new:0:8}"
 summary="zipcompass: update at zips@${source_new:0:8}, $report"
