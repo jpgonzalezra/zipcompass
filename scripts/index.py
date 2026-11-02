@@ -38,7 +38,7 @@ REVISION_NUMBER = re.compile(r"\bRevision ([0-9]+)\b")
 ACTIVATION = re.compile(r"^ACTIVATION_HEIGHT \((.+)\)\s*$")
 NETWORK_HEIGHT = re.compile(r"^[:\s]*(Mainnet|Testnet)\b[^:]*:\s*(.*?)\s*$")
 NETWORKS = ("mainnet", "testnet")
-PDF_BUILD = re.compile(r"^\s*mv -f aux/(nu[0-9_]+)\.pdf \$\(PDFDIR\)/protocol\.pdf$")
+PDF_BUILD = re.compile(r"^\s*(?:mv -f aux/|ln -sf )(nu[0-9_]+)\.pdf \$\(PDFDIR\)/protocol\.pdf$")
 PDF_LINKS = (
     re.compile(r"\[(NU[0-9.]+)[^\]]*\][^)]*\]\(protocol/protocol\.pdf[#)]"),
     re.compile(r"\[(NU[0-9.]+)[^\]]*\][^<>`]*<protocol/protocol\.pdf[#>]"),
@@ -496,11 +496,11 @@ def render_deployments(rows, index):
 
 
 def pdf_build(zips_dir):
-    """The upgrade whose build protocol/Makefile moves to protocol.pdf."""
+    """The upgrade whose build protocol/Makefile moves or links to protocol.pdf."""
     path = zips_dir / "protocol" / "Makefile"
     builds = [match.group(1) for line in path.read_text(encoding="utf-8").splitlines() if (match := PDF_BUILD.match(line))]
     if len(builds) != 1:
-        fail(f"{path}: expected one 'mv -f aux/nu*.pdf $(PDFDIR)/protocol.pdf' line, found {len(builds)}")
+        fail(f"{path}: expected one 'mv -f aux/nu*.pdf' or 'ln -sf nu*.pdf' line to $(PDFDIR)/protocol.pdf, found {len(builds)}")
     return builds[0], "NU" + builds[0][2:].replace("_", ".")
 
 
