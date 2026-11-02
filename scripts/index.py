@@ -546,17 +546,19 @@ def render_facts(zips_dir, rows, deployment_rows, area_rows, commit, date):
             ("The latest tag of the specification", latest_tag(zips_dir), f"`git describe --tags --match '{TAG_PATTERN}'`"),
         ],
     )
-    lines += [
-        "",
-        "## ZIPs that link protocol.pdf for a later upgrade",
-        "",
-        f"`protocol.pdf` is the {build_upgrade} build, so the text these ZIPs expect under a later upgrade's macro is not in it. Read `protocol/protocol.tex` at the anchor instead.",
-        "",
-    ]
-    lines += table(
-        ("ZIP", "Title", "Upgrade in the link", "File"),
-        [(row["zip"], row["title"], ", ".join(labels), row["file"]) for row, labels in later_pdf_links(zips_dir, rows, build_upgrade, order)],
-    )
+    later_links = later_pdf_links(zips_dir, rows, build_upgrade, order)
+    lines += ["", "## ZIPs that link protocol.pdf for a later upgrade", ""]
+    if later_links:
+        lines += [
+            f"`protocol.pdf` is the {build_upgrade} build, so the text these ZIPs expect under a later upgrade's macro is not in it. Read `protocol/protocol.tex` at the anchor instead.",
+            "",
+        ]
+        lines += table(
+            ("ZIP", "Title", "Upgrade in the link", "File"),
+            [(row["zip"], row["title"], ", ".join(labels), row["file"]) for row, labels in later_links],
+        )
+    else:
+        lines.append(f"`protocol.pdf` is the {build_upgrade} build, and no ZIP links it for a later upgrade.")
     traps = dict.fromkeys(
         (row["zip"], row["revision"], row["status"], row["deploys_with"], row["mainnet"]) for row in area_rows if row["trap"]
     )
